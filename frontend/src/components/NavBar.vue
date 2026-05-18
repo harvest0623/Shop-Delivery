@@ -5,30 +5,32 @@
                 <span>🍔</span>
                 <span class="logo-text">外卖商城</span>
             </a>
-            
+
             <div class="nav-items">
                 <a href="/" class="nav-link" :class="{ active: currentPage === 'home' }">首页</a>
                 <a href="/shops" class="nav-link" :class="{ active: currentPage === 'shops' }">商家</a>
                 <a href="/products" class="nav-link" :class="{ active: currentPage === 'products' }">商品</a>
+                <a href="/statistics" class="nav-link" :class="{ active: currentPage === 'statistics' }">销售统计</a>
             </div>
-            
+
             <div class="nav-actions">
                 <button class="cart-btn" @click="goToCart">
                     <span>🛒</span>
                     <span v-if="cartCount > 0" class="cart-badge">{{ cartCount }}</span>
                 </button>
-                
+
                 <div v-if="user" class="user-btn" @click="toggleMenu">
                     <span>👤</span>
                 </div>
-                
+
                 <button v-else class="login-btn" @click="goToLogin">登录</button>
             </div>
         </div>
-        
+
         <div v-if="showMenu" class="dropdown-menu">
             <a href="/profile">个人中心</a>
             <a href="/orders">我的订单</a>
+            <a href="/statistics">销售统计</a>
             <a href="/admin" v-if="user?.is_admin">管理后台</a>
             <a href="#" @click="logout">退出登录</a>
         </div>
@@ -205,11 +207,11 @@ onMounted(() => {
     .navbar-content {
         padding: 15px 0;
     }
-    
+
     .nav-items {
         display: flex;
     }
-    
+
     .logo-text {
         font-size: 22px;
     }

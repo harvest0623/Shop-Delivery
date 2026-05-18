@@ -1,155 +1,148 @@
 <template>
     <div class="statistics-page">
         <div class="page-header">
-            <h1>📊 销售统计</h1>
-            <div class="time-filter">
-                <select v-model="timeRange" @change="loadStatistics">
-                    <option value="today">今日</option>
-                    <option value="week">本周</option>
-                    <option value="month">本月</option>
-                    <option value="all">全部</option>
-                </select>
+            <div class="back-btn" @click="goBack">
+                <span>←</span>
             </div>
+            <h1>📊 销售统计</h1>
+            <p class="subtitle">全方位数据分析，助力经营决策</p>
         </div>
 
-        <div v-if="loading" class="loading">加载中...</div>
+        <div class="container">
+            <!-- 时间筛选 -->
+            <div class="time-filter">
+                <button
+                    v-for="range in timeRanges"
+                    :key="range.value"
+                    class="filter-btn"
+                    :class="{ active: selectedRange === range.value }"
+                    @click="changeRange(range.value)"
+                >
+                    {{ range.label }}
+                </button>
+            </div>
 
-        <div v-else class="statistics-content">
-            <!-- 概览卡片 -->
-            <div class="overview-cards">
-                <div class="card total-orders">
-                    <div class="card-icon">📦</div>
-                    <div class="card-content">
-                        <div class="card-value">{{ statistics.totalOrders }}</div>
-                        <div class="card-label">总订单数</div>
+            <!-- 核心指标卡片 -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-info">
+                        <div class="stat-value">{{ statistics.totalOrders }}</div>
+                        <div class="stat-label">订单总数</div>
                     </div>
                 </div>
-
-                <div class="card total-sales">
-                    <div class="card-icon">💰</div>
-                    <div class="card-content">
-                        <div class="card-value">¥{{ Number(statistics.totalSales).toFixed(2) }}</div>
-                        <div class="card-label">总销售额</div>
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-info">
+                        <div class="stat-value">¥{{ formatNumber(statistics.totalSales) }}</div>
+                        <div class="stat-label">销售总额</div>
                     </div>
                 </div>
-
-                <div class="card total-refunds">
-                    <div class="card-icon">🔙</div>
-                    <div class="card-content">
-                        <div class="card-value">¥{{ Number(statistics.totalRefunds).toFixed(2) }}</div>
-                        <div class="card-label">总退货金额</div>
+                <div class="stat-card">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-info">
+                        <div class="stat-value">¥{{ formatNumber(statistics.netSales) }}</div>
+                        <div class="stat-label">净销售额</div>
                     </div>
                 </div>
-
-                <div class="card net-sales">
-                    <div class="card-icon">📈</div>
-                    <div class="card-content">
-                        <div class="card-value">¥{{ Number(statistics.netSales).toFixed(2) }}</div>
-                        <div class="card-label">净销售额</div>
+                <div class="stat-card">
+                    <div class="stat-icon">↩️</div>
+                    <div class="stat-info">
+                        <div class="stat-value">¥{{ formatNumber(statistics.totalRefunds) }}</div>
+                        <div class="stat-label">退货金额</div>
                     </div>
                 </div>
             </div>
 
             <!-- 订单状态分布 -->
-            <div class="chart-section">
-                <h2>📊 订单状态分布</h2>
-                <div class="status-chart">
-                    <div class="status-item">
-                        <span class="status-dot pending"></span>
-                        <span class="status-label">待处理</span>
-                        <span class="status-value">{{ statistics.pendingOrders }}</span>
+            <div class="section">
+                <h2 class="section-title">订单状态分布</h2>
+                <div class="status-grid">
+                    <div class="status-card pending">
+                        <div class="status-count">{{ statistics.pendingOrders }}</div>
+                        <div class="status-label">待处理</div>
                     </div>
-                    <div class="status-item">
-                        <span class="status-dot processing"></span>
-                        <span class="status-label">已完成</span>
-                        <span class="status-value">{{ statistics.completedOrders }}</span>
+                    <div class="status-card completed">
+                        <div class="status-count">{{ statistics.completedOrders }}</div>
+                        <div class="status-label">已完成</div>
                     </div>
-                    <div class="status-item">
-                        <span class="status-dot returned"></span>
-                        <span class="status-label">已退货</span>
-                        <span class="status-value">{{ statistics.returnedOrders }}</span>
+                    <div class="status-card returned">
+                        <div class="status-count">{{ statistics.returnedOrders }}</div>
+                        <div class="status-label">已退货</div>
                     </div>
-                    <div class="status-item">
-                        <span class="status-dot cancelled"></span>
-                        <span class="status-label">已取消</span>
-                        <span class="status-value">{{ statistics.cancelledOrders }}</span>
+                    <div class="status-card cancelled">
+                        <div class="status-count">{{ statistics.cancelledOrders }}</div>
+                        <div class="status-label">已取消</div>
                     </div>
                 </div>
             </div>
 
-            <!-- 热门商品 TOP 10 -->
-            <div class="chart-section">
-                <h2>🔥 热门商品 TOP 10</h2>
-                <div class="product-ranking">
-                    <div 
-                        v-for="(item, index) in statistics.topProducts" 
-                        :key="item.id"
-                        class="ranking-item"
+            <!-- 热销商品 -->
+            <div class="section">
+                <h2 class="section-title">🔥 热销商品 TOP10</h2>
+                <div class="products-list">
+                    <div
+                        v-for="(product, index) in statistics.topProducts"
+                        :key="product.id"
+                        class="product-item"
                     >
-                        <div class="rank-number" :class="'rank-' + (index + 1)">{{ index + 1 }}</div>
-                        <img :src="item.image_url" :alt="item.name" class="product-image" />
+                        <div class="product-rank">{{ index + 1 }}</div>
+                        <div class="product-image">
+                            <img :src="product.image_url" :alt="product.name" />
+                        </div>
                         <div class="product-info">
-                            <h4>{{ item.name }}</h4>
-                            <p class="shop-name">{{ item.shop_name }}</p>
+                            <h4>{{ product.name }}</h4>
+                            <p class="product-shop">{{ product.shop_name }}</p>
                         </div>
                         <div class="product-stats">
-                            <span class="sales-count">销量 {{ item.total_quantity }}</span>
-                            <span class="sales-amount">¥{{ Number(item.total_amount).toFixed(0) }}</span>
+                            <div class="product-qty">销量：{{ product.total_quantity }}</div>
+                            <div class="product-amount">¥{{ formatNumber(product.total_amount) }}</div>
                         </div>
-                    </div>
-                    <div v-if="statistics.topProducts.length === 0" class="no-data">
-                        暂无销售数据
                     </div>
                 </div>
             </div>
 
-            <!-- 商家销售排行 -->
-            <div class="chart-section">
-                <h2>🏪 商家销售排行</h2>
-                <div class="shop-ranking">
-                    <div 
-                        v-for="(shop, index) in statistics.topShops" 
+            <!-- 热门商家 -->
+            <div class="section">
+                <h2 class="section-title">🏪 热门商家 TOP10</h2>
+                <div class="shops-list">
+                    <div
+                        v-for="(shop, index) in statistics.topShops"
                         :key="shop.id"
-                        class="ranking-item"
+                        class="shop-item"
                     >
-                        <div class="rank-number" :class="'rank-' + (index + 1)">{{ index + 1 }}</div>
-                        <img :src="shop.image_url" :alt="shop.name" class="shop-image" />
+                        <div class="shop-rank">{{ index + 1 }}</div>
+                        <div class="shop-image">
+                            <img :src="shop.image_url" :alt="shop.name" />
+                        </div>
                         <div class="shop-info">
                             <h4>{{ shop.name }}</h4>
-                            <p class="order-count">订单数 {{ shop.order_count }}</p>
                         </div>
-                        <div class="shop-sales">
-                            <span class="sales-amount">¥{{ Number(shop.total_amount).toFixed(0) }}</span>
+                        <div class="shop-stats">
+                            <div class="shop-orders">{{ shop.order_count }} 单</div>
+                            <div class="shop-amount">¥{{ formatNumber(shop.total_amount) }}</div>
                         </div>
-                    </div>
-                    <div v-if="statistics.topShops.length === 0" class="no-data">
-                        暂无销售数据
                     </div>
                 </div>
             </div>
 
-            <!-- 每日销售趋势 -->
-            <div class="chart-section">
-                <h2>📈 每日销售趋势</h2>
+            <!-- 销售趋势 -->
+            <div class="section">
+                <h2 class="section-title">📈 销售趋势</h2>
                 <div class="trend-chart">
-                    <div 
-                        v-for="day in statistics.dailyTrend" 
-                        :key="day.date"
-                        class="trend-item"
-                    >
-                        <div class="trend-bar">
-                            <div 
-                                class="bar-fill" 
-                                :style="{ height: getBarHeight(day.amount) + '%' }"
-                            ></div>
-                        </div>
-                        <div class="trend-info">
-                            <span class="trend-date">{{ formatDate(day.date) }}</span>
-                            <span class="trend-amount">¥{{ Number(day.amount).toFixed(0) }}</span>
-                        </div>
+                    <div class="chart-header">
+                        <span>日期</span>
+                        <span>订单数</span>
+                        <span>销售额</span>
                     </div>
-                    <div v-if="statistics.dailyTrend.length === 0" class="no-data">
-                        暂无销售数据
+                    <div
+                        v-for="day in statistics.dailyTrend"
+                        :key="day.date"
+                        class="trend-row"
+                    >
+                        <span class="trend-date">{{ day.date }}</span>
+                        <span class="trend-orders">{{ day.order_count }} 单</span>
+                        <span class="trend-amount">¥{{ formatNumber(day.amount) }}</span>
                     </div>
                 </div>
             </div>
@@ -161,8 +154,7 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
-const loading = ref(true)
-const timeRange = ref('month')
+const selectedRange = ref('all')
 const statistics = ref({
     totalOrders: 0,
     totalSales: 0,
@@ -177,34 +169,34 @@ const statistics = ref({
     dailyTrend: []
 })
 
-const maxDailyAmount = () => {
-    if (statistics.value.dailyTrend.length === 0) return 0
-    return Math.max(...statistics.value.dailyTrend.map(d => d.amount))
-}
+const timeRanges = [
+    { label: '今日', value: 'today' },
+    { label: '近7天', value: 'week' },
+    { label: '近30天', value: 'month' },
+    { label: '全部', value: 'all' }
+]
 
-const getBarHeight = (amount) => {
-    const max = maxDailyAmount()
-    if (max === 0) return 0
-    return Math.round((amount / max) * 100)
-}
-
-const formatDate = (dateStr) => {
-    if (!dateStr) return ''
-    const date = new Date(dateStr)
-    return `${date.getMonth() + 1}/${date.getDate()}`
+const formatNumber = (num) => {
+    if (!num) return '0.00'
+    return Number(num).toFixed(2)
 }
 
 const loadStatistics = async () => {
-    loading.value = true
     try {
-        const response = await axios.get(`/api/statistics?range=${timeRange.value}`)
+        const response = await axios.get(`/api/statistics?range=${selectedRange.value}`)
         statistics.value = response.data
-        console.log('统计数据:', statistics.value)
     } catch (error) {
         console.error('加载统计数据失败:', error)
-    } finally {
-        loading.value = false
     }
+}
+
+const changeRange = (range) => {
+    selectedRange.value = range
+    loadStatistics()
+}
+
+const goBack = () => {
+    window.history.back()
 }
 
 onMounted(() => {
@@ -220,46 +212,91 @@ onMounted(() => {
 }
 
 .page-header {
-    background: white;
-    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px 20px;
+    text-align: center;
+    position: relative;
+}
+
+.back-btn {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.back-btn:hover {
+    background: rgba(255,255,255,0.3);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.back-btn span {
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
 }
 
 .page-header h1 {
+    margin: 0 0 10px;
+    font-size: 28px;
+}
+
+.subtitle {
     margin: 0;
-    font-size: 24px;
-    font-weight: 700;
-}
-
-.time-filter select {
-    padding: 8px 16px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    opacity: 0.9;
     font-size: 14px;
-    cursor: pointer;
 }
 
-.loading {
-    text-align: center;
-    padding: 80px;
-    color: #999;
-}
-
-.statistics-content {
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
     padding: 20px;
 }
 
-.overview-cards {
+.time-filter {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding: 5px 0;
+}
+
+.filter-btn {
+    padding: 8px 20px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    color: white;
+    border-color: transparent;
+}
+
+.stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 15px;
     margin-bottom: 30px;
 }
 
-.card {
+.stat-card {
     background: white;
     border-radius: 16px;
     padding: 20px;
@@ -269,32 +306,23 @@ onMounted(() => {
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
-.card-icon {
-    font-size: 40px;
+.stat-icon {
+    font-size: 32px;
 }
 
-.card-content {
-    flex: 1;
-}
-
-.card-value {
-    font-size: 28px;
+.stat-value {
+    font-size: 22px;
     font-weight: 700;
     color: #333;
 }
 
-.card-label {
-    font-size: 14px;
-    color: #999;
-    margin-top: 5px;
+.stat-label {
+    font-size: 13px;
+    color: #888;
+    margin-top: 4px;
 }
 
-.total-orders .card-icon { color: #667eea; }
-.total-sales .card-icon { color: #4caf50; }
-.total-refunds .card-icon { color: #f44336; }
-.net-sales .card-icon { color: #ff9800; }
-
-.chart-section {
+.section {
     background: white;
     border-radius: 16px;
     padding: 20px;
@@ -302,88 +330,95 @@ onMounted(() => {
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
-.chart-section h2 {
-    margin: 0 0 20px;
-    font-size: 18px;
-    font-weight: 600;
-}
-
-.status-chart {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-}
-
-.status-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 15px 20px;
-    background: #f8f9fa;
-    border-radius: 12px;
-    flex: 1;
-    min-width: 150px;
-}
-
-.status-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-}
-
-.status-dot.pending { background: #ff9800; }
-.status-dot.processing { background: #4caf50; }
-.status-dot.returned { background: #f44336; }
-.status-dot.cancelled { background: #9e9e9e; }
-
-.status-label {
-    font-size: 14px;
-    color: #666;
-    flex: 1;
-}
-
-.status-value {
+.section-title {
     font-size: 18px;
     font-weight: 700;
+    margin: 0 0 20px;
     color: #333;
 }
 
-.product-ranking, .shop-ranking {
-    display: flex;
-    flex-direction: column;
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
     gap: 10px;
 }
 
-.ranking-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
+.status-card {
+    text-align: center;
     padding: 15px;
-    background: #f8f9fa;
     border-radius: 12px;
 }
 
-.rank-number {
+.status-card.pending {
+    background: #fff3e0;
+    color: #ff9800;
+}
+
+.status-card.completed {
+    background: #e8f5e9;
+    color: #4caf50;
+}
+
+.status-card.returned {
+    background: #fce4ec;
+    color: #e91e63;
+}
+
+.status-card.cancelled {
+    background: #eceff1;
+    color: #9e9e9e;
+}
+
+.status-count {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.status-label {
+    font-size: 12px;
+}
+
+.products-list, .shops-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.product-item, .shop-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #fafafa;
+    border-radius: 12px;
+}
+
+.product-rank, .shop-rank {
     width: 30px;
     height: 30px;
-    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    color: white;
+    border-radius: 50%;
     font-size: 14px;
     font-weight: 700;
-    background: #ddd;
-    color: white;
+    flex-shrink: 0;
 }
 
-.rank-number.rank-1 { background: #ffd700; }
-.rank-number.rank-2 { background: #c0c0c0; }
-.rank-number.rank-3 { background: #cd7f32; }
-
 .product-image, .shop-image {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.product-image img, .shop-image img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
 }
 
@@ -392,112 +427,77 @@ onMounted(() => {
 }
 
 .product-info h4, .shop-info h4 {
-    margin: 0 0 5px;
-    font-size: 16px;
+    margin: 0 0 4px;
+    font-size: 14px;
     font-weight: 600;
 }
 
-.shop-name, .order-count {
+.product-shop {
     margin: 0;
-    font-size: 13px;
-    color: #667eea;
+    font-size: 12px;
+    color: #888;
 }
 
-.product-stats {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 5px;
+.product-stats, .shop-stats {
+    text-align: right;
 }
 
-.sales-count {
-    font-size: 13px;
-    color: #666;
+.product-qty, .shop-orders {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 4px;
 }
 
-.sales-amount {
-    font-size: 18px;
-    font-weight: 700;
-    color: #ff6b6b;
-}
-
-.shop-sales {
-    font-size: 18px;
+.product-amount, .shop-amount {
+    font-size: 16px;
     font-weight: 700;
     color: #ff6b6b;
 }
 
 .trend-chart {
     display: flex;
-    align-items: flex-end;
-    gap: 10px;
-    height: 200px;
-    overflow-x: auto;
-}
-
-.trend-item {
-    flex: 1;
-    min-width: 50px;
-    display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
-.trend-bar {
-    width: 100%;
-    height: 150px;
-    background: #f0f0f0;
-    border-radius: 8px 8px 0 0;
-    position: relative;
+.chart-header {
     display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-}
-
-.bar-fill {
-    background: linear-gradient(180deg, #ff6b6b 0%, #ee5a24 100%);
-    border-radius: 8px 8px 0 0;
-    min-height: 5px;
-    transition: height 0.3s ease;
-}
-
-.trend-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-}
-
-.trend-date {
-    font-size: 11px;
-    color: #999;
-}
-
-.trend-amount {
-    font-size: 12px;
+    justify-content: space-between;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 8px;
     font-weight: 600;
-    color: #333;
-}
-
-.no-data {
-    text-align: center;
-    padding: 40px;
-    color: #999;
     font-size: 14px;
 }
 
-@media (max-width: 768px) {
-    .overview-cards {
-        grid-template-columns: 1fr 1fr;
-    }
-    
-    .status-chart {
-        flex-direction: column;
-    }
-    
-    .ranking-item {
-        flex-wrap: wrap;
+.trend-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 10px;
+    background: #fafafa;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.trend-date {
+    flex: 1;
+}
+
+.trend-orders {
+    flex: 1;
+    text-align: center;
+}
+
+.trend-amount {
+    flex: 1;
+    text-align: right;
+    font-weight: 600;
+    color: #ff6b6b;
+}
+
+@media (min-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 </style>

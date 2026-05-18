@@ -2,15 +2,18 @@
     <div class="cart-page">
         <div class="container">
             <div class="page-header">
+                <div class="back-btn" @click="goBack">
+                    <span>←</span>
+                </div>
                 <h1>🛒 购物车</h1>
                 <button v-if="cart.length > 0" class="clear-btn" @click="clearCart">清空购物车</button>
             </div>
 
             <div v-if="cart.length > 0" class="cart-content">
                 <div class="cart-items">
-                    <div 
-                        v-for="item in cart" 
-                        :key="item.id" 
+                    <div
+                        v-for="item in cart"
+                        :key="item.id"
                         class="cart-item"
                     >
                         <div class="item-image">
@@ -22,13 +25,13 @@
                             <div class="item-price">¥{{ Number(item.price).toFixed(2) }}</div>
                         </div>
                         <div class="item-quantity">
-                            <button 
-                                class="qty-btn" 
+                            <button
+                                class="qty-btn"
                                 @click="decreaseQty(item)"
                             >-</button>
                             <span class="qty">{{ item.quantity }}</span>
-                            <button 
-                                class="qty-btn" 
+                            <button
+                                class="qty-btn"
                                 @click="increaseQty(item)"
                             >+</button>
                         </div>
@@ -80,7 +83,7 @@
             <div class="modal-content" @click.stop>
                 <div class="success-icon">✅</div>
                 <h2>订单提交成功！</h2>
-                <p class="order-number">订单号：{{ lastOrderId }}</p>
+                <p class="order-number">订单号：{{ lastOrderNo }}</p>
                 <p class="order-info">商品数量：{{ totalQuantity }} 件</p>
                 <p class="order-info">应付金额：¥{{ totalAmount.toFixed(2) }}</p>
                 <div class="modal-buttons">
@@ -95,13 +98,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
-import { useRouter } from 'vue-router'
 
-const router = useRouter()
 const cart = ref([])
 const processing = ref(false)
 const showSuccessModal = ref(false)
-const lastOrderId = ref('')
+const lastOrderNo = ref('')
 
 const totalQuantity = computed(() => {
     return cart.value.reduce((sum, item) => sum + item.quantity, 0)
@@ -161,26 +162,32 @@ const handleCheckout = async () => {
         return
     }
 
+    // Get shop_id from first item (all items should be from same shop)
+    const shopId = cart.value[0]?.shop_id
+    if (!shopId) {
+        alert('购物车数据异常')
+        return
+    }
+
     processing.value = true
 
     try {
         const orderData = {
             customer_id: user.id,
+            shop_id: shopId,
             total_amount: totalAmount.value,
+            delivery_fee: deliveryFee.value,
             items: cart.value.map(item => ({
                 product_id: item.id,
-                shop_id: item.shop_id,
-                product_name: item.name,
                 price: item.price,
-                quantity: item.quantity,
-                subtotal: item.price * item.quantity
+                quantity: item.quantity
             }))
         }
 
         const response = await axios.post('/api/orders', orderData)
-        
+
         if (response.data.success) {
-            lastOrderId.value = response.data.order_id
+            lastOrderNo.value = response.data.order_no
             cart.value = []
             saveCart()
             showSuccessModal.value = true
@@ -207,6 +214,10 @@ const goShopping = () => {
     window.location.href = '/shops'
 }
 
+const goBack = () => {
+    window.history.back()
+}
+
 onMounted(() => {
     loadCart()
 })
@@ -230,6 +241,38 @@ onMounted(() => {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
+    position: relative;
+}
+
+.back-btn {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    background: #f5f5f5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+    background: #e0e0e0;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.back-btn span {
+    color: #666;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.page-header h1 {
+    margin: 0 auto;
 }
 
 .page-header h1 {
@@ -466,7 +509,7 @@ onMounted(() => {
     box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
 }
 
-/* 弹窗样式 */
+/* Modal styles */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -557,12 +600,12 @@ onMounted(() => {
     .cart-content {
         grid-template-columns: 1fr;
     }
-    
+
     .cart-item {
         flex-wrap: wrap;
         gap: 15px;
     }
-    
+
     .item-total {
         text-align: left;
     }

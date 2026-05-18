@@ -5,7 +5,7 @@ import Footer from './components/Footer.vue'
 
 const showNavFooter = computed(() => {
     const path = window.location.pathname
-    return !['/login', '/register'].includes(path)
+    return !['/', '/login', '/register'].includes(path)
 })
 </script>
 

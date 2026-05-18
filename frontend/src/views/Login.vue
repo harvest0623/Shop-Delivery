@@ -6,40 +6,45 @@
                     <h1>欢迎回来</h1>
                     <p>登录您的账户</p>
                 </div>
-                
+
                 <form @submit.prevent="handleLogin" class="login-form">
                     <div class="form-group">
                         <label for="username">用户名</label>
-                        <input 
-                            type="text" 
-                            id="username" 
-                            v-model="form.username" 
+                        <input
+                            type="text"
+                            id="username"
+                            v-model="form.username"
                             placeholder="请输入用户名"
                             class="form-input"
                         />
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="password">密码</label>
-                        <input 
-                            type="password" 
-                            id="password" 
-                            v-model="form.password" 
-                            placeholder="请输入密码"
-                            class="form-input"
-                        />
+                        <div class="password-input-wrap">
+                            <input
+                                :type="showPassword ? 'text' : 'password'"
+                                id="password"
+                                v-model="form.password"
+                                placeholder="请输入密码"
+                                class="form-input"
+                            />
+                            <span class="eye-icon" @click="togglePassword">
+                                {{ showPassword ? '🙈' : '👁️' }}
+                            </span>
+                        </div>
                     </div>
-                    
+
                     <button type="submit" class="login-btn" :disabled="isLoading">
                         <span v-if="isLoading">登录中...</span>
                         <span v-else>登录</span>
                     </button>
-                    
+
                     <div v-if="error" class="error-message">
                         {{ error }}
                     </div>
                 </form>
-                
+
                 <div class="login-footer">
                     <p>还没有账户？</p>
                     <button class="register-link" @click="goToRegister">立即注册</button>
@@ -60,16 +65,21 @@ const form = ref({
 
 const isLoading = ref(false)
 const error = ref('')
+const showPassword = ref(false)
+
+const togglePassword = () => {
+    showPassword.value = !showPassword.value
+}
 
 const handleLogin = async () => {
     if (!form.value.username || !form.value.password) {
         error.value = '请输入用户名和密码'
         return
     }
-    
+
     isLoading.value = true
     error.value = ''
-    
+
     try {
         const res = await axios.post('/api/users/login', form.value)
         localStorage.setItem('user', JSON.stringify(res.data.user))
@@ -142,13 +152,45 @@ const goToRegister = () => {
     font-weight: 500;
 }
 
+.password-input-wrap {
+    position: relative;
+}
+
 .form-input {
+    width: 100%;
     padding: 15px;
     border: 2px solid #e0e0e0;
     border-radius: 12px;
     font-size: 16px;
     outline: none;
     transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.password-input-wrap .form-input {
+    padding-right: 50px;
+}
+
+.eye-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+    cursor: pointer;
+    user-select: none;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+    z-index: 10;
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+}
+
+.eye-icon:hover {
+    opacity: 1;
 }
 
 .form-input:focus {

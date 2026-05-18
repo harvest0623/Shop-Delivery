@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// 测试数据库连接
+// Test database connection
 const pool = require('./config/database');
 
 app.get('/api/health', async (req, res) => {
@@ -18,19 +18,20 @@ app.get('/api/health', async (req, res) => {
     const connection = await pool.getConnection();
     await connection.query('SELECT 1');
     connection.release();
-    res.json({ status: 'OK', message: '数据库连接成功' });
+    res.json({ status: 'OK', message: 'Database connected successfully' });
   } catch (error) {
-    res.status(500).json({ status: 'Error', message: '数据库连接失败', error: error.message });
+    res.status(500).json({ status: 'Error', message: 'Database connection failed', error: error.message });
   }
 });
 
-// 路由
+// Routes
 app.use('/api/users', require('./routes/users'));
 app.use('/api/shops', require('./routes/shops'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/categories', require('./routes/categories'));
 app.use('/api/orders', require('./routes/orders'));
+app.use('/api/statistics', require('./routes/statistics'));
 
 app.listen(PORT, () => {
-  console.log(`服务器运行在端口 ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

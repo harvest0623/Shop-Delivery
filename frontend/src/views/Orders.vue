@@ -1,12 +1,15 @@
 <template>
     <div class="orders-page">
         <div class="page-header">
+            <div class="back-btn" @click="goBack">
+                <span>←</span>
+            </div>
             <h1>📋 我的订单</h1>
         </div>
 
         <div class="orders-tabs">
-            <div 
-                v-for="tab in statusTabs" 
+            <div
+                v-for="tab in statusTabs"
                 :key="tab.value"
                 class="tab-item"
                 :class="{ active: activeTab === tab.value }"
@@ -17,7 +20,7 @@
         </div>
 
         <div v-if="loading" class="loading">加载中...</div>
-        
+
         <div v-else-if="filteredOrders.length === 0" class="empty">
             <div class="empty-icon">📦</div>
             <h2>暂无订单</h2>
@@ -26,14 +29,14 @@
         </div>
 
         <div v-else class="orders-list">
-            <div 
-                v-for="order in filteredOrders" 
+            <div
+                v-for="order in filteredOrders"
                 :key="order.id"
                 class="order-card"
             >
                 <div class="order-header">
                     <div class="order-info">
-                        <span class="order-id">订单号：{{ order.order_number }}</span>
+                        <span class="order-id">订单号：{{ order.order_no }}</span>
                         <span class="order-time">{{ formatTime(order.created_at) }}</span>
                     </div>
                     <span class="order-status" :class="order.status">
@@ -41,9 +44,14 @@
                     </span>
                 </div>
 
+                <div class="order-shop">
+                    <img :src="order.shop_image" class="shop-icon" />
+                    <span class="shop-name">{{ order.shop_name }}</span>
+                </div>
+
                 <div class="order-items">
-                    <div 
-                        v-for="item in order.items" 
+                    <div
+                        v-for="item in order.items"
                         :key="item.id"
                         class="order-item"
                     >
@@ -52,14 +60,13 @@
                         </div>
                         <div class="item-info">
                             <h4>{{ item.product_name }}</h4>
-                            <p class="item-shop">{{ item.shop_name || '官方店铺' }}</p>
                             <div class="item-bottom">
                                 <span class="item-price">¥{{ Number(item.price).toFixed(2) }}</span>
                                 <span class="item-qty">x{{ item.quantity }}</span>
                             </div>
                         </div>
                         <div class="item-subtotal">
-                            ¥{{ Number(item.subtotal).toFixed(2) }}
+                            ¥{{ Number(item.price * item.quantity).toFixed(2) }}
                         </div>
                     </div>
                 </div>
@@ -70,21 +77,21 @@
                         合计：<span class="total-price">¥{{ Number(order.total_amount).toFixed(2) }}</span>
                     </div>
                     <div class="order-actions">
-                        <button 
-                            v-if="order.status === 'completed'" 
+                        <button
+                            v-if="order.status === 'completed'"
                             class="btn-refund"
                             @click="handleRefund(order)"
                         >
                             申请退货
                         </button>
-                        <button 
+                        <button
                             v-if="order.status === 'pending'"
                             class="btn-cancel"
                             @click="handleCancel(order)"
                         >
                             取消订单
                         </button>
-                        <button 
+                        <button
                             v-if="order.status === 'returned'"
                             class="btn-detail"
                             @click="viewReturnDetail(order)"
@@ -100,11 +107,11 @@
         <div v-if="showRefundModal" class="modal-overlay" @click="closeRefundModal">
             <div class="modal-content" @click.stop>
                 <h2>申请退货</h2>
-                <p class="refund-order-id">订单号：{{ currentOrder?.order_number }}</p>
+                <p class="refund-order-id">订单号：{{ currentOrder?.order_no }}</p>
                 <div class="form-group">
                     <label>退货原因：</label>
-                    <textarea 
-                        v-model="refundReason" 
+                    <textarea
+                        v-model="refundReason"
                         placeholder="请输入退货原因..."
                         rows="3"
                     ></textarea>
@@ -153,7 +160,9 @@ const formatTime = (time) => {
 const getStatusText = (status) => {
     const statusMap = {
         'pending': '待处理',
-        'processing': '处理中',
+        'paid': '已付款',
+        'preparing': '准备中',
+        'delivering': '配送中',
         'completed': '已完成',
         'returned': '已退货',
         'cancelled': '已取消'
@@ -162,6 +171,7 @@ const getStatusText = (status) => {
 }
 
 const getTotalQty = (items) => {
+    if (!items) return 0
     return items.reduce((sum, item) => sum + item.quantity, 0)
 }
 
@@ -169,8 +179,7 @@ const loadOrders = async () => {
     try {
         const user = JSON.parse(localStorage.getItem('user') || 'null')
         if (!user) {
-            alert('请先登录')
-            window.location.href = '/login'
+            loading.value = false
             return
         }
 
@@ -199,7 +208,7 @@ const confirmRefund = async () => {
         await axios.put(`/api/orders/${currentOrder.value.id}/return`, {
             reason: refundReason.value
         })
-        
+
         alert('退货申请已提交')
         closeRefundModal()
         loadOrders()
@@ -229,11 +238,15 @@ const handleCancel = async (order) => {
 }
 
 const viewReturnDetail = (order) => {
-    alert(`退货原因：${order.refund_reason || '无'}\n退货时间：${order.refund_time || '无'}`)
+    alert(`退货原因：${order.return_reason || '无'}\n订单金额：¥${order.total_amount}`)
 }
 
 const goShopping = () => {
     window.location.href = '/shops'
+}
+
+const goBack = () => {
+    window.history.back()
 }
 
 onMounted(() => {
@@ -253,6 +266,34 @@ onMounted(() => {
     padding: 20px;
     text-align: center;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    position: relative;
+}
+
+.back-btn {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    background: #f5f5f5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+    background: #e0e0e0;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.back-btn span {
+    color: #666;
+    font-size: 18px;
+    font-weight: bold;
 }
 
 .page-header h1 {
@@ -379,6 +420,27 @@ onMounted(() => {
     color: #9e9e9e;
 }
 
+.order-shop {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    background: #fafafa;
+}
+
+.shop-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.shop-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
 .order-items {
     padding: 15px;
 }
@@ -416,12 +478,6 @@ onMounted(() => {
     margin: 0 0 5px;
     font-size: 14px;
     font-weight: 600;
-}
-
-.item-shop {
-    margin: 0 0 5px;
-    font-size: 12px;
-    color: #667eea;
 }
 
 .item-bottom {
@@ -494,7 +550,7 @@ onMounted(() => {
     color: #2196f3;
 }
 
-/* 弹窗样式 */
+/* Modal styles */
 .modal-overlay {
     position: fixed;
     top: 0;
