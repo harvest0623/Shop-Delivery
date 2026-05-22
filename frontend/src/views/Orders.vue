@@ -78,7 +78,7 @@
                     </div>
                     <div class="order-actions">
                         <button
-                            v-if="order.status === 'completed'"
+                            v-if="order.status === 'pending' || order.status === 'paid' || order.status === 'completed'"
                             class="btn-refund"
                             @click="handleRefund(order)"
                         >

@@ -130,7 +130,13 @@ const addToCart = (product) => {
     if (existing) {
         existing.quantity++
     } else {
-        cart.push({ ...product, quantity: 1 })
+        const shop = shops.value.find(s => s.id === product.shop_id)
+        cart.push({
+            ...product,
+            shop_name: shop ? shop.name : '',
+            shop_delivery_fee: shop ? Number(shop.delivery_fee) : 5,
+            quantity: 1
+        })
     }
     localStorage.setItem('cart', JSON.stringify(cart))
     alert(`✅ ${product.name} 已添加到购物车`)

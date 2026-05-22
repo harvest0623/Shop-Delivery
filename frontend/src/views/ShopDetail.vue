@@ -110,6 +110,7 @@ const increaseQty = (product) => {
             id: product.id,
             shop_id: product.shop_id,
             shop_name: shop.value.name,
+            shop_delivery_fee: Number(shop.value.delivery_fee),
             name: product.name,
             price: Number(product.price),
             image_url: product.image_url,

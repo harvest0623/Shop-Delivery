@@ -313,6 +313,28 @@
             </div>
         </section>
 
+        <!-- 优惠活动横幅 -->
+        <section class="promo-section scroll-animate delay-3">
+            <div class="promo-inner">
+                <div class="promo-content">
+                    <div class="promo-badge">🎉 限时优惠</div>
+                    <h3 class="promo-title">新用户专享大礼包</h3>
+                    <p class="promo-desc">注册即送 ¥100 优惠券包，首单立减 ¥20</p>
+                    <div class="promo-tags">
+                        <span class="promo-tag">🎫 满30减5</span>
+                        <span class="promo-tag">🎫 满50减15</span>
+                        <span class="promo-tag">🎫 满100减30</span>
+                    </div>
+                </div>
+                <div class="promo-visual">
+                    <div class="coupon-card">
+                        <div class="coupon-value">¥20</div>
+                        <div class="coupon-label">新人券</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- 底部统计 -->
         <section class="stats-bar scroll-animate delay-4">
             <div class="stats-inner">
@@ -357,6 +379,47 @@
                 </div>
             </div>
         </section>
+
+        <!-- 页脚 -->
+        <footer class="home-footer">
+            <div class="footer-inner">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <span>🍔</span>
+                        <span class="footer-logo-text">外卖商城</span>
+                    </div>
+                    <p class="footer-desc">汇聚全城美食，30分钟极速送达</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-col">
+                        <h4>关于我们</h4>
+                        <a href="#">公司简介</a>
+                        <a href="#">联系我们</a>
+                        <a href="#">加入我们</a>
+                    </div>
+                    <div class="footer-col">
+                        <h4>帮助中心</h4>
+                        <a href="#">配送说明</a>
+                        <a href="#">退换货政策</a>
+                        <a href="#">常见问题</a>
+                    </div>
+                    <div class="footer-col">
+                        <h4>商务合作</h4>
+                        <a href="#">商家入驻</a>
+                        <a href="#">广告服务</a>
+                        <a href="#">合作伙伴</a>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>© 2024 外卖商城 版权所有</p>
+                    <div class="footer-social">
+                        <span>📱</span>
+                        <span>💬</span>
+                        <span>📧</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
     </div>
 </template>
 
@@ -377,6 +440,11 @@ const featuredProducts = computed(() => {
 const getShopName = (shopId) => {
     const shop = shops.value.find(s => s.id === shopId)
     return shop ? shop.name : ''
+}
+
+const getShopDeliveryFee = (shopId) => {
+    const shop = shops.value.find(s => s.id === shopId)
+    return shop ? Number(shop.delivery_fee) : 5
 }
 
 const handleImageError = (e) => {
@@ -401,6 +469,7 @@ const addToCart = (product) => {
             id: product.id,
             shop_id: product.shop_id,
             shop_name: getShopName(product.shop_id),
+            shop_delivery_fee: getShopDeliveryFee(product.shop_id),
             name: product.name,
             price: Number(product.price),
             image_url: product.image_url,
@@ -1613,6 +1682,212 @@ onUnmounted(() => {
     background: rgba(255,255,255,0.08);
 }
 
+/* ===== 优惠活动 ===== */
+.promo-section {
+    max-width: 1280px;
+    margin: 0 auto 50px;
+    padding: 0 32px;
+}
+
+.promo-inner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 24px;
+    padding: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+}
+
+.promo-inner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 400px;
+    height: 400px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+}
+
+.promo-content {
+    position: relative;
+    z-index: 1;
+    color: white;
+}
+
+.promo-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    backdrop-filter: blur(10px);
+}
+
+.promo-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 10px;
+}
+
+.promo-desc {
+    font-size: 16px;
+    opacity: 0.9;
+    margin: 0 0 20px;
+}
+
+.promo-tags {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.promo-tag {
+    background: rgba(255,255,255,0.15);
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+}
+
+.promo-visual {
+    position: relative;
+    z-index: 1;
+}
+
+.coupon-card {
+    width: 140px;
+    height: 160px;
+    background: white;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    transform: rotate(8deg);
+    transition: transform 0.3s ease;
+}
+
+.coupon-card:hover {
+    transform: rotate(0deg) scale(1.05);
+}
+
+.coupon-value {
+    font-size: 48px;
+    font-weight: 800;
+    color: #667eea;
+    line-height: 1;
+}
+
+.coupon-label {
+    font-size: 14px;
+    color: #666;
+    margin-top: 8px;
+    font-weight: 600;
+}
+
+/* ===== 页脚 ===== */
+.home-footer {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    padding: 60px 32px 30px;
+    color: white;
+}
+
+.footer-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.footer-brand {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.footer-logo span:first-child {
+    font-size: 36px;
+}
+
+.footer-logo-text {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.footer-desc {
+    font-size: 14px;
+    opacity: 0.6;
+    margin: 0;
+}
+
+.footer-links {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    margin-bottom: 40px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.footer-col h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 16px;
+}
+
+.footer-col a {
+    display: block;
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    font-size: 14px;
+    margin-bottom: 10px;
+    transition: color 0.3s;
+}
+
+.footer-col a:hover {
+    color: white;
+}
+
+.footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-bottom p {
+    margin: 0;
+    font-size: 13px;
+    opacity: 0.5;
+}
+
+.footer-social {
+    display: flex;
+    gap: 16px;
+}
+
+.footer-social span {
+    font-size: 20px;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.footer-social span:hover {
+    transform: scale(1.2);
+}
+
 /* ===== 滚动动画 ===== */
 .scroll-animate {
     opacity: 0;
@@ -1723,6 +1998,30 @@ onUnmounted(() => {
     .stat-item {
         flex: 1 1 40%;
         justify-content: center;
+    }
+    
+    .promo-inner {
+        flex-direction: column;
+        text-align: center;
+        gap: 30px;
+    }
+    
+    .promo-title {
+        font-size: 22px;
+    }
+    
+    .promo-tags {
+        justify-content: center;
+    }
+    
+    .footer-links {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+    
+    .footer-bottom {
+        flex-direction: column;
+        gap: 16px;
     }
 }
 </style>

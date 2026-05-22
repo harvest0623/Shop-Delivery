@@ -84,8 +84,8 @@
                 <div class="success-icon">✅</div>
                 <h2>订单提交成功！</h2>
                 <p class="order-number">订单号：{{ lastOrderNo }}</p>
-                <p class="order-info">商品数量：{{ totalQuantity }} 件</p>
-                <p class="order-info">应付金额：¥{{ totalAmount.toFixed(2) }}</p>
+                <p class="order-info">商品数量：{{ lastOrderQuantity }} 件</p>
+                <p class="order-info">应付金额：¥{{ lastOrderAmount.toFixed(2) }}</p>
                 <div class="modal-buttons">
                     <button class="btn-secondary" @click="goOrders">查看订单</button>
                     <button class="btn-primary" @click="goShopping">继续购物</button>
@@ -103,6 +103,8 @@ const cart = ref([])
 const processing = ref(false)
 const showSuccessModal = ref(false)
 const lastOrderNo = ref('')
+const lastOrderAmount = ref(0)
+const lastOrderQuantity = ref(0)
 
 const totalQuantity = computed(() => {
     return cart.value.reduce((sum, item) => sum + item.quantity, 0)
@@ -113,6 +115,12 @@ const totalPrice = computed(() => {
 })
 
 const deliveryFee = computed(() => {
+    // 获取购物车中第一个商品的商家配送费
+    const shopDeliveryFee = cart.value[0]?.shop_delivery_fee
+    if (shopDeliveryFee !== undefined) {
+        return Number(shopDeliveryFee)
+    }
+    // 兼容旧数据：如果购物车中没有商家配送费信息，使用默认规则
     return totalPrice.value >= 50 ? 0 : 5
 })
 
@@ -188,6 +196,8 @@ const handleCheckout = async () => {
 
         if (response.data.success) {
             lastOrderNo.value = response.data.order_no
+            lastOrderAmount.value = totalAmount.value
+            lastOrderQuantity.value = totalQuantity.value
             cart.value = []
             saveCart()
             showSuccessModal.value = true
