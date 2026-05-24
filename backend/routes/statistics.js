@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
 
-// Get sales statistics
+// 获取销售统计数据（支持时间范围可选）
 router.get('/', async (req, res) => {
   try {
     const { range = 'month' } = req.query;
@@ -10,24 +10,29 @@ router.get('/', async (req, res) => {
     let startDate, endDate;
     const today = new Date();
 
+    // 根据时间范围参数确定起始和结束日期
     switch (range) {
       case 'today':
+        // 今天
         startDate = today.toISOString().split('T')[0];
         endDate = startDate;
         break;
       case 'week':
+        // 最近7天
         const weekAgo = new Date(today);
         weekAgo.setDate(today.getDate() - 7);
         startDate = weekAgo.toISOString().split('T')[0];
         endDate = today.toISOString().split('T')[0];
         break;
       case 'month':
+        // 最近30天
         const monthAgo = new Date(today);
         monthAgo.setDate(today.getDate() - 30);
         startDate = monthAgo.toISOString().split('T')[0];
         endDate = today.toISOString().split('T')[0];
         break;
       case 'all':
+        // 全部时间
         startDate = '2000-01-01';
         endDate = '2099-12-31';
         break;
@@ -36,7 +41,7 @@ router.get('/', async (req, res) => {
         endDate = '2099-12-31';
     }
 
-    // Overall statistics
+    // 总体统计数据
     const [statsRows] = await pool.query(`
       SELECT
         COUNT(*) as totalOrders,
@@ -52,7 +57,7 @@ router.get('/', async (req, res) => {
       WHERE DATE(created_at) BETWEEN ? AND ?
     `, [startDate, endDate]);
 
-    // Top products
+    // 热销商品排行榜（前10名）
     const [topProducts] = await pool.query(`
       SELECT
         p.id,
@@ -71,7 +76,7 @@ router.get('/', async (req, res) => {
       LIMIT 10
     `, [startDate, endDate]);
 
-    // Top shops
+    // 热门商家排行榜（前10名）
     const [topShops] = await pool.query(`
       SELECT
         s.id,
@@ -87,7 +92,7 @@ router.get('/', async (req, res) => {
       LIMIT 10
     `, [startDate, endDate]);
 
-    // Daily trend
+    // 每日销售趋势
     const [dailyTrend] = await pool.query(`
       SELECT
         DATE(created_at) as date,
@@ -117,7 +122,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get shop sales summary using view
+// 使用视图获取商家销售汇总
 router.get('/shops', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM sales_summary_view ORDER BY net_sales DESC');
@@ -127,7 +132,7 @@ router.get('/shops', async (req, res) => {
   }
 });
 
-// Get customer order summary using view
+// 使用视图获取顾客订单汇总
 router.get('/customers', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM customer_order_view ORDER BY total_spent DESC');

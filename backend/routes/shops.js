@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
 
-// 获取所有商店
+// 获取所有商家列表
 router.get('/', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM shops');
@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// 获取单个商店
+// 获取单个商家详情
 router.get('/:id', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM shops WHERE id = ?', [req.params.id]);
@@ -25,7 +25,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// 创建商店
+// 创建新商家
 router.post('/', async (req, res) => {
   try {
     const { name, description, address, phone, image_url } = req.body;

@@ -1,0 +1,327 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900">
+  <defs>
+    <style>
+      .entity { fill: #B8D4E3; stroke: #333; stroke-width: 1.5; }
+      .attribute { fill: #FFFACD; stroke: #333; stroke-width: 1; }
+      .relationship { fill: #90EE90; stroke: #333; stroke-width: 1.5; }
+      .text { font-family: "Microsoft YaHei", "SimHei", sans-serif; font-size: 13px; fill: #333; }
+      .entity-name { font-size: 15px; font-weight: bold; }
+      .pk { text-decoration: underline; font-weight: bold; }
+      .line { stroke: #333; stroke-width: 1; fill: none; }
+      .title { font-size: 24px; font-weight: bold; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <!-- 标题 -->
+  <text x="600" y="35" class="title">外卖商城系统 E-R 图</text>
+
+  <!-- ========== 商家实体 (左上角) ========== -->
+  <!-- 属性椭圆 -->
+  <ellipse cx="120" cy="110" rx="55" ry="22" class="attribute"/>
+  <text x="120" y="115" class="text pk" text-anchor="middle">商家ID**</text>
+
+  <ellipse cx="60" cy="155" rx="55" ry="22" class="attribute"/>
+  <text x="60" y="160" class="text" text-anchor="middle">商家名称*</text>
+
+  <ellipse cx="180" cy="155" rx="55" ry="22" class="attribute"/>
+  <text x="180" y="160" class="text" text-anchor="middle">联系电话</text>
+
+  <ellipse cx="60" cy="200" rx="55" ry="22" class="attribute"/>
+  <text x="60" y="205" class="text" text-anchor="middle">评分</text>
+
+  <ellipse cx="180" cy="200" rx="55" ry="22" class="attribute"/>
+  <text x="180" y="205" class="text" text-anchor="middle">配送费</text>
+
+  <!-- 实体矩形 -->
+  <rect x="70" y="235" width="100" height="50" class="entity"/>
+  <text x="120" y="255" class="text entity-name" text-anchor="middle">商家</text>
+  <text x="120" y="275" class="text" text-anchor="middle">(Shops)</text>
+
+  <!-- 属性连线 -->
+  <line x1="120" y1="132" x2="120" y2="235" class="line"/>
+  <line x1="90" y1="155" x2="100" y2="235" class="line"/>
+  <line x1="150" y1="155" x2="140" y2="235" class="line"/>
+  <line x1="75" y1="200" x2="95" y2="235" class="line"/>
+  <line x1="165" y1="200" x2="145" y2="235" class="line"/>
+
+
+  <!-- ========== 商品分类实体 (右上角) ========== -->
+  <!-- 属性椭圆 -->
+  <ellipse cx="980" cy="110" rx="55" ry="22" class="attribute"/>
+  <text x="980" y="115" class="text pk" text-anchor="middle">分类ID**</text>
+
+  <ellipse cx="920" cy="155" rx="55" ry="22" class="attribute"/>
+  <text x="920" y="160" class="text" text-anchor="middle">分类名称*</text>
+
+  <ellipse cx="1040" cy="155" rx="55" ry="22" class="attribute"/>
+  <text x="1040" y="160" class="text" text-anchor="middle">图标</text>
+
+  <!-- 实体矩形 -->
+  <rect x="930" y="200" width="100" height="50" class="entity"/>
+  <text x="980" y="220" class="text entity-name" text-anchor="middle">商品分类</text>
+  <text x="980" y="240" class="text" text-anchor="middle">(Categories)</text>
+
+  <!-- 属性连线 -->
+  <line x1="980" y1="132" x2="980" y2="200" class="line"/>
+  <line x1="950" y1="155" x2="960" y2="200" class="line"/>
+  <line x1="1010" y1="155" x2="1000" y2="200" class="line"/>
+
+
+  <!-- ========== 商品实体 (中上) ========== -->
+  <!-- 属性椭圆 -->
+  <ellipse cx="550" cy="110" rx="55" ry="22" class="attribute"/>
+  <text x="550" y="115" class="text pk" text-anchor="middle">商品ID**</text>
+
+  <ellipse cx="460" cy="155" rx="55" ry="22" class="attribute"/>
+  <text x="460" y="160" class="text" text-anchor="middle">商品名称*</text>
+
+  <ellipse cx="640" cy="155" rx="55" ry="22" class="attribute"/>
+  <text x="640" y="160" class="text" text-anchor="middle">价格*</text>
+
+  <ellipse cx="460" cy="200" rx="55" ry="22" class="attribute"/>
+  <text x="460" y="205" class="text" text-anchor="middle">库存</text>
+
+  <ellipse cx="640" cy="200" rx="55" ry="22" class="attribute"/>
+  <text x="640" y="205" class="text" text-anchor="middle">是否招牌</text>
+
+  <!-- 实体矩形 -->
+  <rect x="500" y="235" width="100" height="50" class="entity"/>
+  <text x="550" y="255" class="text entity-name" text-anchor="middle">商品</text>
+  <text x="550" y="275" class="text" text-anchor="middle">(Products)</text>
+
+  <!-- 属性连线 -->
+  <line x1="550" y1="132" x2="550" y2="235" class="line"/>
+  <line x1="490" y1="155" x2="520" y2="235" class="line"/>
+  <line x1="610" y1="155" x2="580" y2="235" class="line"/>
+  <line x1="475" y1="200" x2="515" y2="235" class="line"/>
+  <line x1="625" y1="200" x2="585" y2="235" class="line"/>
+
+
+  <!-- ========== 顾客实体 (左中) ========== -->
+  <!-- 属性椭圆 -->
+  <ellipse cx="120" cy="480" rx="55" ry="22" class="attribute"/>
+  <text x="120" y="485" class="text pk" text-anchor="middle">顾客ID**</text>
+
+  <ellipse cx="60" cy="525" rx="55" ry="22" class="attribute"/>
+  <text x="60" y="530" class="text" text-anchor="middle">用户名*</text>
+
+  <ellipse cx="180" cy="525" rx="55" ry="22" class="attribute"/>
+  <text x="180" y="530" class="text" text-anchor="middle">密码*</text>
+
+  <ellipse cx="60" cy="570" rx="55" ry="22" class="attribute"/>
+  <text x="60" y="575" class="text" text-anchor="middle">邮箱</text>
+
+  <ellipse cx="180" cy="570" rx="55" ry="22" class="attribute"/>
+  <text x="180" y="575" class="text" text-anchor="middle">手机号</text>
+
+  <!-- 实体矩形 -->
+  <rect x="70" y="605" width="100" height="50" class="entity"/>
+  <text x="120" y="625" class="text entity-name" text-anchor="middle">顾客</text>
+  <text x="120" y="645" class="text" text-anchor="middle">(Customers)</text>
+
+  <!-- 属性连线 -->
+  <line x1="120" y1="502" x2="120" y2="605" class="line"/>
+  <line x1="90" y1="525" x2="100" y2="605" class="line"/>
+  <line x1="150" y1="525" x2="140" y2="605" class="line"/>
+  <line x1="75" y1="570" x2="95" y2="605" class="line"/>
+  <line x1="165" y1="570" x2="145" y2="605" class="line"/>
+
+
+  <!-- ========== 地址实体 (左下) ========== -->
+  <!-- 属性椭圆 -->
+  <ellipse cx="120" cy="750" rx="55" ry="22" class="attribute"/>
+  <text x="120" y="755" class="text pk" text-anchor="middle">地址ID**</text>
+
+  <ellipse cx="60" cy="795" rx="55" ry="22" class="attribute"/>
+  <text x="60" y="800" class="text" text-anchor="middle">收件人姓名</text>
+
+  <ellipse cx="180" cy="795" rx="55" ry="22" class="attribute"/>
+  <text x="180" y="800" class="text" text-anchor="middle">收件人电话</text>
+
+  <ellipse cx="60" cy="840" rx="55" ry="22" class="attribute"/>
+  <text x="60" y="845" class="text" text-anchor="middle">省份</text>
+
+  <ellipse cx="180" cy="840" rx="55" ry="22" class="attribute"/>
+  <text x="180" y="845" class="text" text-anchor="middle">详细地址</text>
+
+  <!-- 实体矩形 -->
+  <rect x="70" y="690" width="100" height="50" class="entity"/>
+  <text x="120" y="710" class="text entity-name" text-anchor="middle">地址</text>
+  <text x="120" y="730" class="text" text-anchor="middle">(Addresses)</text>
+
+  <!-- 属性连线 -->
+  <line x1="120" y1="690" x2="120" y2="728" class="line"/>
+  <line x1="90" y1="795" x2="100" y2="740" class="line"/>
+  <line x1="150" y1="795" x2="140" y2="740" class="line"/>
+  <line x1="75" y1="840" x2="95" y2="740" class="line"/>
+  <line x1="165" y1="840" x2="145" y2="740" class="line"/>
+
+
+  <!-- ========== 订单实体 (中下) ========== -->
+  <!-- 属性椭圆 -->
+  <ellipse cx="550" cy="600" rx="55" ry="22" class="attribute"/>
+  <text x="550" y="605" class="text pk" text-anchor="middle">订单ID**</text>
+
+  <ellipse cx="460" cy="645" rx="55" ry="22" class="attribute"/>
+  <text x="460" y="650" class="text" text-anchor="middle">订单金额*</text>
+
+  <ellipse cx="640" cy="645" rx="55" ry="22" class="attribute"/>
+  <text x="640" y="650" class="text" text-anchor="middle">配送费</text>
+
+  <ellipse cx="460" cy="690" rx="55" ry="22" class="attribute"/>
+  <text x="460" y="695" class="text" text-anchor="middle">订单状态</text>
+
+  <ellipse cx="640" cy="690" rx="55" ry="22" class="attribute"/>
+  <text x="640" y="695" class="text" text-anchor="middle">订单编号*</text>
+
+  <ellipse cx="550" cy="735" rx="55" ry="22" class="attribute"/>
+  <text x="550" y="740" class="text" text-anchor="middle">退货原因</text>
+
+  <!-- 实体矩形 -->
+  <rect x="500" y="525" width="100" height="50" class="entity"/>
+  <text x="550" y="545" class="text entity-name" text-anchor="middle">订单</text>
+  <text x="550" y="565" class="text" text-anchor="middle">(Orders)</text>
+
+  <!-- 属性连线 -->
+  <line x1="550" y1="525" x2="550" y2="578" class="line"/>
+  <line x1="490" y1="645" x2="520" y2="575" class="line"/>
+  <line x1="610" y1="645" x2="580" y2="575" class="line"/>
+  <line x1="475" y1="690" x2="515" y2="575" class="line"/>
+  <line x1="625" y1="690" x2="585" y2="575" class="line"/>
+  <line x1="550" y1="735" x2="550" y2="575" class="line"/>
+
+
+  <!-- ========== 订单项实体 (中间) ========== -->
+  <!-- 属性椭圆 -->
+  <ellipse cx="850" cy="420" rx="55" ry="22" class="attribute"/>
+  <text x="850" y="425" class="text pk" text-anchor="middle">订单项ID**</text>
+
+  <ellipse cx="790" cy="465" rx="55" ry="22" class="attribute"/>
+  <text x="790" y="470" class="text" text-anchor="middle">数量</text>
+
+  <ellipse cx="910" cy="465" rx="55" ry="22" class="attribute"/>
+  <text x="910" y="470" class="text" text-anchor="middle">单价*</text>
+
+  <!-- 实体矩形 -->
+  <rect x="800" y="360" width="100" height="50" class="entity"/>
+  <text x="850" y="380" class="text entity-name" text-anchor="middle">订单项</text>
+  <text x="850" y="400" class="text" text-anchor="middle">(OrderItems)</text>
+
+  <!-- 属性连线 -->
+  <line x1="850" y1="360" x2="850" y2="398" class="line"/>
+  <line x1="820" y1="465" x2="830" y2="410" class="line"/>
+  <line x1="880" y1="465" x2="870" y2="410" class="line"/>
+
+
+  <!-- ========== 购物车实体 (右下) ========== -->
+  <!-- 属性椭圆 -->
+  <ellipse cx="980" cy="600" rx="55" ry="22" class="attribute"/>
+  <text x="980" y="605" class="text pk" text-anchor="middle">购物车ID**</text>
+
+  <ellipse cx="920" cy="645" rx="55" ry="22" class="attribute"/>
+  <text x="920" y="650" class="text" text-anchor="middle">数量</text>
+
+  <ellipse cx="1040" cy="645" rx="55" ry="22" class="attribute"/>
+  <text x="1040" y="650" class="text" text-anchor="middle">添加时间</text>
+
+  <!-- 实体矩形 -->
+  <rect x="930" y="540" width="100" height="50" class="entity"/>
+  <text x="980" y="560" class="text entity-name" text-anchor="middle">购物车</text>
+  <text x="980" y="580" class="text" text-anchor="middle">(Cart)</text>
+
+  <!-- 属性连线 -->
+  <line x1="980" y1="540" x2="980" y2="578" class="line"/>
+  <line x1="950" y1="645" x2="960" y2="590" class="line"/>
+  <line x1="1010" y1="645" x2="1000" y2="590" class="line"/>
+
+
+  <!-- ========== 联系（菱形）========== -->
+
+  <!-- 联系1：商家-商品（拥有） -->
+  <polygon points="320,260 360,285 320,310 280,285" class="relationship"/>
+  <text x="320" y="290" class="text" text-anchor="middle">拥有</text>
+  <line x1="170" y1="285" x2="280" y2="285" class="line"/>
+  <line x1="360" y1="285" x2="500" y2="260" class="line"/>
+  <text x="200" y="280" class="text" text-anchor="middle">1</text>
+  <text x="460" y="265" class="text" text-anchor="middle">N</text>
+
+  <!-- 联系2：分类-商品（属于） -->
+  <polygon points="760,260 800,285 760,310 720,285" class="relationship"/>
+  <text x="760" y="290" class="text" text-anchor="middle">属于</text>
+  <line x1="600" y1="260" x2="720" y2="285" class="line"/>
+  <line x1="800" y1="285" x2="930" y2="225" class="line"/>
+  <text x="640" y="265" class="text" text-anchor="middle">N</text>
+  <text x="880" y="245" class="text" text-anchor="middle">1</text>
+
+  <!-- 联系3：顾客-地址（拥有） -->
+  <polygon points="220,680 260,705 220,730 180,705" class="relationship"/>
+  <text x="220" y="710" class="text" text-anchor="middle">拥有</text>
+  <line x1="170" y1="655" x2="220" y2="680" class="line"/>
+  <line x1="220" y1="730" x2="170" y2="690" class="line"/>
+  <text x="180" y="675" class="text" text-anchor="middle">1</text>
+  <text x="180" y="725" class="text" text-anchor="middle">N</text>
+
+  <!-- 联系4：顾客-订单（下单） -->
+  <polygon points="320,580 360,605 320,630 280,605" class="relationship"/>
+  <text x="320" y="610" class="text" text-anchor="middle">下单</text>
+  <line x1="170" y1="605" x2="280" y2="605" class="line"/>
+  <line x1="360" y1="605" x2="500" y2="550" class="line"/>
+  <text x="210" y="600" class="text" text-anchor="middle">1</text>
+  <text x="460" y="570" class="text" text-anchor="middle">N</text>
+
+  <!-- 联系5：商家-订单（接收） -->
+  <polygon points="320,450 360,475 320,500 280,475" class="relationship"/>
+  <text x="320" y="480" class="text" text-anchor="middle">接收</text>
+  <line x1="170" y1="285" x2="280" y2="475" class="line"/>
+  <line x1="360" y1="475" x2="500" y2="550" class="line"/>
+  <text x="210" y="370" class="text" text-anchor="middle">1</text>
+  <text x="460" y="520" class="text" text-anchor="middle">N</text>
+
+  <!-- 联系6：订单-订单项（包含） -->
+  <polygon points="680,450 720,475 680,500 640,475" class="relationship"/>
+  <text x="680" y="480" class="text" text-anchor="middle">包含</text>
+  <line x1="600" y1="525" x2="640" y2="475" class="line"/>
+  <line x1="720" y1="475" x2="800" y2="410" class="line"/>
+  <text x="620" y="490" class="text" text-anchor="middle">1</text>
+  <text x="760" y="435" class="text" text-anchor="middle">N</text>
+
+  <!-- 联系7：商品-订单项（对应） -->
+  <polygon points="680,320 720,345 680,370 640,345" class="relationship"/>
+  <text x="680" y="350" class="text" text-anchor="middle">对应</text>
+  <line x1="600" y1="285" x2="640" y2="345" class="line"/>
+  <line x1="720" y1="345" x2="800" y2="385" class="line"/>
+  <text x="620" y="310" class="text" text-anchor="middle">1</text>
+  <text x="760" y="355" class="text" text-anchor="middle">N</text>
+
+  <!-- 联系8：顾客-购物车（添加） -->
+  <polygon points="750,680 790,705 750,730 710,705" class="relationship"/>
+  <text x="750" y="710" class="text" text-anchor="middle">添加</text>
+  <line x1="170" y1="655" x2="710" y2="705" class="line"/>
+  <line x1="790" y1="705" x2="930" y2="590" class="line"/>
+  <text x="400" y="690" class="text" text-anchor="middle">1</text>
+  <text x="860" y="630" class="text" text-anchor="middle">N</text>
+
+  <!-- 联系9：商品-购物车（放入） -->
+  <polygon points="850,550 890,575 850,600 810,575" class="relationship"/>
+  <text x="850" y="580" class="text" text-anchor="middle">放入</text>
+  <line x1="600" y1="285" x2="850" y2="550" class="line"/>
+  <line x1="890" y1="575" x2="930" y2="590" class="line"/>
+  <text x="700" y="400" class="text" text-anchor="middle">1</text>
+  <text x="910" y="575" class="text" text-anchor="middle">N</text>
+
+
+  <!-- ========== 图例 ========== -->
+  <rect x="900" y="750" width="260" height="130" fill="white" stroke="#333" stroke-width="1"/>
+  <text x="1030" y="775" class="text entity-name" text-anchor="middle">图例说明</text>
+
+  <rect x="920" y="790" width="30" height="20" class="entity"/>
+  <text x="960" y="805" class="text" text-anchor="start">实体</text>
+
+  <ellipse cx="935" cy="835" rx="20" ry="10" class="attribute"/>
+  <text x="960" y="840" class="text" text-anchor="start">属性</text>
+
+  <polygon points="1030,825 1050,840 1030,855 1010,840" class="relationship"/>
+  <text x="1060" y="845" class="text" text-anchor="start">联系</text>
+
+  <text x="920" y="870" class="text pk" text-anchor="start">下划线 = 主键</text>
+</svg>

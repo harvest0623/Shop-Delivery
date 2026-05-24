@@ -34,142 +34,142 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- 4.1 Shops Table
 CREATE TABLE shops (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
-    address VARCHAR(255),
-    phone VARCHAR(20),
-    image_url VARCHAR(500),
-    rating DECIMAL(2,1) DEFAULT 4.5,
-    delivery_time INT DEFAULT 30,
-    delivery_fee DECIMAL(5,2) DEFAULT 3.00,
-    min_order DECIMAL(5,2) DEFAULT 20.00,
-    status VARCHAR(20) DEFAULT 'open',
+    name VARCHAR(100) NOT NULL,          -- 商家名称
+    description TEXT,                     -- 商家描述
+    address VARCHAR(255),                 -- 地址
+    phone VARCHAR(20),                    -- 电话
+    image_url VARCHAR(500),               -- 图片
+    rating DECIMAL(2,1) DEFAULT 4.5,      -- 评分
+    delivery_time INT DEFAULT 30,         -- 配送时间(分钟)
+    delivery_fee DECIMAL(5,2) DEFAULT 3.00, -- 配送费
+    min_order DECIMAL(5,2) DEFAULT 20.00,  -- 起送价
+    status VARCHAR(20) DEFAULT 'open',     -- 状态
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB COMMENT='Shops Information';
+);
 
 -- 4.2 Categories Table
 CREATE TABLE categories (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(50) NOT NULL,
-    icon VARCHAR(100),
-    sort_order INT DEFAULT 0,
+    name VARCHAR(50) NOT NULL,    -- 分类名称（如：汉堡、饮品）
+    icon VARCHAR(100),             -- 图标emoji
+    sort_order INT DEFAULT 0,      -- 排序
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB COMMENT='Product Categories';
+);
 
 -- 4.3 Products Table
 CREATE TABLE products (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    shop_id INT NOT NULL,
-    category_id INT,
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
-    price DECIMAL(10,2) NOT NULL,
-    image_url VARCHAR(500),
-    stock INT DEFAULT 100,
-    is_featured TINYINT(1) DEFAULT 0,
-    sort_order INT DEFAULT 0,
+    shop_id INT NOT NULL,              -- 外键→shops(id)
+    category_id INT,                    -- 外键→categories(id)
+    name VARCHAR(100) NOT NULL,        -- 商品名称
+    description TEXT,                   -- 商品描述
+    price DECIMAL(10,2) NOT NULL,      -- 价格
+    image_url VARCHAR(500),            -- 图片
+    stock INT DEFAULT 100,             -- 库存
+    is_featured TINYINT(1) DEFAULT 0,  -- 是否招牌
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (shop_id) REFERENCES shops(id) ON DELETE CASCADE,
-    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
-) ENGINE=InnoDB COMMENT='Products Information';
+    FOREIGN KEY (shop_id) REFERENCES shops(id),
+    FOREIGN KEY (category_id) REFERENCES categories(id)
+);
 
 -- 4.4 Customers Table
 CREATE TABLE customers (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
+    username VARCHAR(50) UNIQUE NOT NULL,  -- 用户名
+    password VARCHAR(255) NOT NULL,         -- 密码（bcrypt加密）
     email VARCHAR(100),
     phone VARCHAR(20),
     nickname VARCHAR(50),
     avatar_url VARCHAR(500),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB COMMENT='Customers Information';
+);
 
 -- 4.5 Addresses Table
 CREATE TABLE addresses (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    customer_id INT NOT NULL,
-    name VARCHAR(50),
-    phone VARCHAR(20),
-    province VARCHAR(50),
-    city VARCHAR(50),
-    district VARCHAR(50),
-    detail VARCHAR(255),
-    is_default TINYINT(1) DEFAULT 0,
+    customer_id INT NOT NULL,        -- 外键→customers(id)
+    name VARCHAR(50),                -- 收件人姓名
+    phone VARCHAR(20),               -- 收件人电话
+    province VARCHAR(50),            -- 省份
+    city VARCHAR(50),                -- 城市
+    district VARCHAR(50),            -- 区县
+    detail VARCHAR(255),             -- 详细地址
+    is_default TINYINT(1) DEFAULT 0, -- 是否默认地址
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
-) ENGINE=InnoDB COMMENT='Delivery Addresses';
+    FOREIGN KEY (customer_id) REFERENCES customers(id)
+);
 
 -- 4.6 Cart Table
 CREATE TABLE cart (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    customer_id INT NOT NULL,
-    product_id INT NOT NULL,
-    quantity INT DEFAULT 1,
+    customer_id INT NOT NULL,        -- 外键→customers(id)
+    product_id INT NOT NULL,         -- 外键→products(id)
+    quantity INT DEFAULT 1,          -- 数量
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_cart_item (customer_id, product_id)
-) ENGINE=InnoDB COMMENT='Shopping Cart';
+    FOREIGN KEY (customer_id) REFERENCES customers(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
 
 -- 4.7 Orders Table
 CREATE TABLE orders (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    customer_id INT NOT NULL,
-    shop_id INT NOT NULL,
-    address_id INT,
-    total_amount DECIMAL(10,2) NOT NULL,
-    delivery_fee DECIMAL(5,2) DEFAULT 0.00,
-    status VARCHAR(20) DEFAULT 'pending',
-    order_no VARCHAR(50) UNIQUE,
-    remark TEXT,
-    return_reason VARCHAR(255),
+    customer_id INT NOT NULL,              -- 外键→customers(id)
+    shop_id INT NOT NULL,                  -- 外键→shops(id)
+    address_id INT,                        -- 外键→addresses(id)
+    total_amount DECIMAL(10,2) NOT NULL,   -- 订单总金额
+    delivery_fee DECIMAL(5,2) DEFAULT 0.00, -- 配送费
+    status VARCHAR(20) DEFAULT 'pending',   -- 状态：pending/paid/shipping/completed/returned/cancelled
+    order_no VARCHAR(50) UNIQUE,           -- 订单编号（如：ORD202605193295）
+    remark TEXT,                            -- 备注
+    return_reason VARCHAR(255),             -- 退货原因
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
-    FOREIGN KEY (shop_id) REFERENCES shops(id) ON DELETE CASCADE,
-    FOREIGN KEY (address_id) REFERENCES addresses(id) ON DELETE SET NULL
-) ENGINE=InnoDB COMMENT='Orders';
+    FOREIGN KEY (customer_id) REFERENCES customers(id),
+    FOREIGN KEY (shop_id) REFERENCES shops(id),
+    FOREIGN KEY (address_id) REFERENCES addresses(id)
+);
 
 -- 4.8 Order Items Table
 CREATE TABLE order_items (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    order_id INT NOT NULL,
-    product_id INT NOT NULL,
-    quantity INT DEFAULT 1,
-    price DECIMAL(10,2) NOT NULL,
-    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
-) ENGINE=InnoDB COMMENT='Order Items';
+    order_id INT NOT NULL,             -- 外键→orders(id)
+    product_id INT NOT NULL,           -- 外键→products(id)
+    quantity INT DEFAULT 1,            -- 数量
+    price DECIMAL(10,2) NOT NULL,      -- 下单时的单价
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
 
 -- 5. Create Views
 
--- 5.1 Order Detail View
+-- 5.1 Order Detail View （订单详情视图）
+-- 功能：整合订单、顾客、商家、地址信息，方便查看订单完整详情
 CREATE VIEW order_detail_view AS
 SELECT 
-    o.id AS order_id,
+    o.id AS order_id,  
     o.order_no,
     o.total_amount,
     o.delivery_fee,
     o.status,
     o.remark,
     o.return_reason,
-    o.created_at,
+    o.created_at,  
     c.username,
     c.phone AS customer_phone,
     c.nickname,
     s.name AS shop_name,
     s.image_url AS shop_image,
-    CONCAT(a.province, a.city, a.district, a.detail) AS address_detail,
+    CONCAT(a.province, a.city, a.district, a.detail) AS address_detail,  -- 合并地址信息
     a.name AS receiver_name,
     a.phone AS receiver_phone
 FROM orders o
-JOIN customers c ON o.customer_id = c.id
-JOIN shops s ON o.shop_id = s.id
-LEFT JOIN addresses a ON o.address_id = a.id;
+JOIN customers c ON o.customer_id = c.id  -- 关联顾客表
+JOIN shops s ON o.shop_id = s.id  -- 关联商家表
+LEFT JOIN addresses a ON o.address_id = a.id;  -- 关联地址表
 
--- 5.2 Shop Product View
+-- 5.2 Shop Product View （商家商品视图）
+-- 功能：整合商家商品、分类、商家信息，方便查看商家商品详情
 CREATE VIEW shop_product_view AS
 SELECT 
     p.id AS product_id,
@@ -188,10 +188,11 @@ SELECT
     c.name AS category_name,
     c.icon AS category_icon
 FROM products p
-JOIN shops s ON p.shop_id = s.id
-LEFT JOIN categories c ON p.category_id = c.id;
+JOIN shops s ON p.shop_id = s.id  -- 关联商家表
+LEFT JOIN categories c ON p.category_id = c.id;  -- 关联分类表
 
--- 5.3 Sales Summary View
+-- 5.3 Sales Summary View（销售汇总视图）
+-- 功能：整合商家订单、退货、取消订单信息，方便查看商家销售情况
 CREATE VIEW sales_summary_view AS
 SELECT 
     s.id AS shop_id,
@@ -208,7 +209,8 @@ FROM shops s
 LEFT JOIN orders o ON s.id = o.shop_id
 GROUP BY s.id, s.name;
 
--- 5.4 Customer Order View
+-- 5.4 Customer Order View（顾客订单视图）
+-- 功能：整合顾客订单、退货、取消订单信息，方便查看顾客订单详情
 CREATE VIEW customer_order_view AS
 SELECT 
     c.id AS customer_id,
@@ -223,32 +225,34 @@ GROUP BY c.id, c.username, c.nickname;
 
 -- 6. Create Stored Procedures
 
--- 6.1 Create Order Procedure
+-- 6.1 Create Order Procedure（创建订单）
+-- 功能：创建新订单，自动生成订单编号
 DELIMITER //
 CREATE PROCEDURE CreateOrder(
-    IN p_customer_id INT,
-    IN p_shop_id INT,
-    IN p_address_id INT,
-    IN p_total_amount DECIMAL(10,2),
-    IN p_delivery_fee DECIMAL(5,2),
-    IN p_remark TEXT
+    IN p_customer_id INT,   -- 顾客ID
+    IN p_shop_id INT,       -- 商家ID
+    IN p_address_id INT,    -- 地址ID
+    IN p_total_amount DECIMAL(10,2), -- 订单总金额
+    IN p_delivery_fee DECIMAL(5,2),  -- 配送费用
+    IN p_remark TEXT                 -- 备注
 )
 BEGIN
-    DECLARE v_order_no VARCHAR(50);
-    DECLARE v_order_id INT;
+    DECLARE v_order_no VARCHAR(50);  -- 订单编号
+    DECLARE v_order_id INT;          -- 订单ID
     
-    SET v_order_no = CONCAT('ORD', DATE_FORMAT(NOW(), '%Y%m%d'), LPAD(FLOOR(RAND() * 10000), 4, '0'));
+    SET v_order_no = CONCAT('ORD', DATE_FORMAT(NOW(), '%Y%m%d'), LPAD(FLOOR(RAND() * 10000), 4, '0')); -- 生成订单编号
     
     INSERT INTO orders (customer_id, shop_id, address_id, total_amount, delivery_fee, status, order_no, remark)
     VALUES (p_customer_id, p_shop_id, p_address_id, p_total_amount, p_delivery_fee, 'pending', v_order_no, p_remark);
     
-    SET v_order_id = LAST_INSERT_ID();
+    SET v_order_id = LAST_INSERT_ID();  -- 获取新插入的订单ID
     
-    SELECT v_order_id AS order_id, v_order_no AS order_no;
+    SELECT v_order_id AS order_id, v_order_no AS order_no;  -- 返回订单ID和编号
 END //
 DELIMITER ;
 
--- 6.2 Process Return Procedure
+-- 6.2 Process Return Procedure（处理退货）
+-- 功能：处理订单退货申请，验证订单状态是否为已完成
 DELIMITER //
 CREATE PROCEDURE ProcessReturn(
     IN p_order_id INT,
@@ -271,7 +275,8 @@ BEGIN
 END //
 DELIMITER ;
 
--- 6.3 Get Sales Statistics Procedure
+-- 6.3 Get Sales Statistics Procedure（获取销售统计）
+-- 功能：根据日期范围查询订单统计数据，包括已完成、已退货、已取消、待处理订单数量
 DELIMITER //
 CREATE PROCEDURE GetSalesStatistics(
     IN p_start_date DATE,
@@ -291,7 +296,8 @@ BEGIN
 END //
 DELIMITER ;
 
--- 6.4 Add to Cart Procedure
+-- 6.4 Add to Cart Procedure（添加购物车）
+-- 功能：将商品添加到购物车，更新购物车数量
 DELIMITER //
 CREATE PROCEDURE AddToCart(
     IN p_customer_id INT,
@@ -323,9 +329,73 @@ BEGIN
 END //
 DELIMITER ;
 
--- 7. Create Triggers
+-- 7. Create Functions
 
--- 7.1 Stock Reduction Trigger on Order Insert
+-- 7.1 Get Product Price Function（获取商品价格）
+-- 功能：根据商品ID获取商品价格
+DELIMITER //
+CREATE FUNCTION GetProductPrice(p_product_id INT) RETURNS DECIMAL(10,2)
+DETERMINISTIC
+BEGIN
+    DECLARE v_price DECIMAL(10,2);
+    SELECT price INTO v_price FROM products WHERE id = p_product_id;
+    RETURN v_price;
+END //
+DELIMITER ;
+
+-- 7.2 Get Order Total Function（获取订单总金额）
+-- 功能：根据订单ID计算订单总金额
+DELIMITER //
+CREATE FUNCTION GetOrderTotal(p_order_id INT) RETURNS DECIMAL(10,2)
+DETERMINISTIC
+BEGIN
+    DECLARE v_total DECIMAL(10,2);
+    SELECT SUM(price * quantity) INTO v_total FROM order_items WHERE order_id = p_order_id;
+    RETURN IFNULL(v_total, 0);
+END //
+DELIMITER ;
+
+-- 7.3 Get Customer Order Count Function（获取顾客订单数量）
+-- 功能：根据顾客ID统计订单数量
+DELIMITER //
+CREATE FUNCTION GetCustomerOrderCount(p_customer_id INT) RETURNS INT
+DETERMINISTIC
+BEGIN
+    DECLARE v_count INT;
+    SELECT COUNT(*) INTO v_count FROM orders WHERE customer_id = p_customer_id;
+    RETURN v_count;
+END //
+DELIMITER ;
+
+-- 7.4 Check Stock Function（检查库存是否充足）
+-- 功能：检查商品库存是否足够
+DELIMITER //
+CREATE FUNCTION CheckStock(p_product_id INT, p_quantity INT) RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    DECLARE v_stock INT;
+    SELECT stock INTO v_stock FROM products WHERE id = p_product_id;
+    RETURN v_stock >= p_quantity;
+END //
+DELIMITER ;
+
+-- 7.5 Get Shop Rating Function（获取商家评分）
+-- 功能：根据商家ID获取商家评分
+DELIMITER //
+CREATE FUNCTION GetShopRating(p_shop_id INT) RETURNS DECIMAL(2,1)
+DETERMINISTIC
+BEGIN
+    DECLARE v_rating DECIMAL(2,1);
+    SELECT rating INTO v_rating FROM shops WHERE id = p_shop_id;
+    RETURN v_rating;
+END //
+DELIMITER ;
+
+
+-- 8. Create Triggers
+
+-- 8.1 Stock Reduction Trigger on Order Insert（订单创建减库存）
+-- 功能：在订单创建时，自动从商品库存中减去商品数量
 DELIMITER //
 CREATE TRIGGER trg_after_order_insert
 AFTER INSERT ON order_items
@@ -337,7 +407,8 @@ BEGIN
 END //
 DELIMITER ;
 
--- 7.2 Stock Recovery Trigger on Order Return
+-- 8.2 Stock Recovery Trigger on Order Return（订单退货恢复库存）
+-- 功能：订单状态更新为退货时，自动恢复库存
 DELIMITER //
 CREATE TRIGGER trg_after_order_return
 AFTER UPDATE ON orders
@@ -352,7 +423,8 @@ BEGIN
 END //
 DELIMITER ;
 
--- 7.3 Stock Recovery Trigger on Order Cancel
+-- 8.3 Stock Recovery Trigger on Order Cancel（订单取消恢复库存）
+-- 功能：订单状态更新为取消时，自动恢复库存
 DELIMITER //
 CREATE TRIGGER trg_after_order_cancel
 AFTER UPDATE ON orders
@@ -367,9 +439,84 @@ BEGIN
 END //
 DELIMITER ;
 
--- 8. Insert Initial Data
+-- 9. Query Examples (查询示例)
+-- 这些查询语句可以直接运行查看数据
 
--- 8.1 Categories
+-- 9.1 单表查询：查询所有商家信息
+-- SELECT * FROM shops;
+
+-- 9.2 单表查询：查询价格大于30元的商品
+-- SELECT name, price, stock FROM products WHERE price > 30;
+
+-- 9.3 单表查询：查询库存少于50的商品（需要补货）
+-- SELECT name, stock FROM products WHERE stock < 50;
+
+-- 9.4 多表连接查询：查询订单详情（关联订单、顾客、商家）
+-- SELECT o.order_no, c.username, s.name AS shop_name, o.total_amount, o.status
+-- FROM orders o
+-- JOIN customers c ON o.customer_id = c.id
+-- JOIN shops s ON o.shop_id = s.id;
+
+-- 9.5 多表连接查询：查询订单中的商品详情
+-- SELECT o.order_no, p.name AS product_name, oi.quantity, oi.price
+-- FROM order_items oi
+-- JOIN orders o ON oi.order_id = o.id
+-- JOIN products p ON oi.product_id = p.id;
+
+-- 9.6 分组统计：按商家统计订单数量和销售额
+-- SELECT s.name AS shop_name, COUNT(o.id) AS order_count, SUM(o.total_amount) AS total_sales
+-- FROM shops s
+-- LEFT JOIN orders o ON s.id = o.shop_id
+-- GROUP BY s.id, s.name;
+
+-- 9.7 分组统计：按分类统计商品数量
+-- SELECT c.name AS category_name, COUNT(p.id) AS product_count
+-- FROM categories c
+-- LEFT JOIN products p ON c.id = p.category_id
+-- GROUP BY c.id, c.name;
+
+-- 9.8 分组统计：按月份统计订单数量
+-- SELECT DATE_FORMAT(created_at, '%Y-%m') AS month, COUNT(*) AS order_count
+-- FROM orders
+-- GROUP BY DATE_FORMAT(created_at, '%Y-%m');
+
+-- 9.9 使用视图查询订单详情 
+-- SELECT * FROM order_detail_view;
+
+-- 9.10 使用视图查询销售汇总
+-- SELECT * FROM sales_summary_view;
+
+-- 9.11 调用函数查询商品价格
+-- SELECT GetProductPrice(1) AS price;
+
+-- 9.12 调用函数查询订单总金额
+-- SELECT GetOrderTotal(1) AS total;
+
+-- 9.13 调用函数查询顾客订单数量
+-- SELECT GetCustomerOrderCount(1) AS order_count;
+
+-- 9.14 调用函数检查库存
+-- SELECT CheckStock(1, 5) AS is_enough;
+
+-- 9.15 调用函数查询商家评分
+-- SELECT GetShopRating(1) AS rating;
+
+-- 9.16 调用存储过程创建订单
+-- CALL CreateOrder(1, 1, 1, 88.00, 3.00, '请尽快配送');
+
+-- 9.17 调用存储过程处理退货
+-- CALL ProcessReturn(1, '商品质量问题');
+
+-- 9.18 调用存储过程获取销售统计
+-- CALL GetSalesStatistics('2024-01-01', '2024-12-31');
+
+-- 9.19 调用存储过程添加购物车
+-- CALL AddToCart(1, 1, 2);
+
+
+-- 9. Insert Initial Data
+
+-- 9.1 Categories
 INSERT INTO categories (name, icon, sort_order) VALUES
 ('Hot Dishes', 'fire', 1),
 ('Main Food', 'rice', 2),

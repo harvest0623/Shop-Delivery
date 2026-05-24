@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
 
-// 获取所有商品
+// 获取所有商品（关联商家信息）
 router.get('/', async (req, res) => {
   try {
     const [rows] = await pool.query(`
@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// 根据商店ID获取商品
+// 根据商店ID获取该商家的所有商品
 router.get('/shop/:shopId', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM products WHERE shop_id = ?', [req.params.shopId]);
@@ -26,7 +26,7 @@ router.get('/shop/:shopId', async (req, res) => {
   }
 });
 
-// 获取单个商品
+// 获取单个商品详情（关联商家信息）
 router.get('/:id', async (req, res) => {
   try {
     const [rows] = await pool.query(`
@@ -44,7 +44,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// 创建商品
+// 创建新商品
 router.post('/', async (req, res) => {
   try {
     const { shop_id, name, description, price, image_url, stock } = req.body;

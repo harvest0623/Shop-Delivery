@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
 
-// Get all orders
+// 获取所有订单（管理员）
 router.get('/', async (req, res) => {
   try {
     const [rows] = await pool.query(`
@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get customer orders
+// 获取顾客的订单列表
 router.get('/customer/:customerId', async (req, res) => {
   try {
     const [rows] = await pool.query(`
@@ -33,7 +33,7 @@ router.get('/customer/:customerId', async (req, res) => {
       ORDER BY o.created_at DESC
     `, [req.params.customerId]);
 
-    // Get order items for each order
+    // 为每个订单获取订单项
     for (let order of rows) {
       const [items] = await pool.query(`
         SELECT oi.*, p.name as product_name, p.image_url
@@ -50,7 +50,7 @@ router.get('/customer/:customerId', async (req, res) => {
   }
 });
 
-// Get single order detail
+// 获取单个订单详情
 router.get('/:id', async (req, res) => {
   try {
     const [orderRows] = await pool.query(`
@@ -82,19 +82,21 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Create order
+// 创建新订单
 router.post('/', async (req, res) => {
   const connection = await pool.getConnection();
   try {
+    // 开启事务
     await connection.beginTransaction();
 
+    // 解析请求体
     const { customer_id, shop_id, address_id, items, total_amount, delivery_fee, remark } = req.body;
 
-    // Generate order number
+    // 生成订单编号：ORD + 年月日 + 4位随机数
     const orderNo = 'ORD' + new Date().toISOString().slice(0,10).replace(/-/g,'') +
                     String(Math.floor(Math.random() * 10000)).padStart(4, '0');
 
-    // Create order
+    // 插入订单记录
     const [orderResult] = await connection.query(
       'INSERT INTO orders (customer_id, shop_id, address_id, total_amount, delivery_fee, status, order_no, remark) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
       [customer_id, shop_id, address_id || null, total_amount, delivery_fee || 0, 'pending', orderNo, remark || '']
@@ -102,7 +104,7 @@ router.post('/', async (req, res) => {
 
     const orderId = orderResult.insertId;
 
-    // Create order items
+    // 插入订单项（触发器会自动减库存）
     for (const item of items) {
       await connection.query(
         'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)',
@@ -110,17 +112,20 @@ router.post('/', async (req, res) => {
       );
     }
 
+    // 提交事务
     await connection.commit();
     res.json({ success: true, id: orderId, order_no: orderNo, message: 'Order created successfully' });
   } catch (error) {
+    // 出错回滚
     await connection.rollback();
     res.status(500).json({ error: error.message });
   } finally {
+    // 释放连接
     connection.release();
   }
 });
 
-// Update order status
+// 更新订单状态
 router.put('/:id/status', async (req, res) => {
   try {
     const { status } = req.body;
@@ -131,10 +136,13 @@ router.put('/:id/status', async (req, res) => {
   }
 });
 
-// Process return
+// 处理退货申请
 router.put('/:id/return', async (req, res) => {
   try {
+    // 解析请求体
     const { reason } = req.body;
+
+    // 更新订单状态为已退货
     await pool.query(
       'UPDATE orders SET status = ?, return_reason = ? WHERE id = ?',
       ['returned', reason, req.params.id]
@@ -145,7 +153,7 @@ router.put('/:id/return', async (req, res) => {
   }
 });
 
-// Cancel order
+// 取消订单
 router.put('/:id/cancel', async (req, res) => {
   try {
     await pool.query('UPDATE orders SET status = ? WHERE id = ?', ['cancelled', req.params.id]);

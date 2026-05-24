@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
 
+// 获取所有商品分类（按排序字段排列）
 router.get('/', async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM categories ORDER BY sort_order');
@@ -11,6 +12,7 @@ router.get('/', async (req, res) => {
     }
 });
 
+// 获取单个分类详情
 router.get('/:id', async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM categories WHERE id = ?', [req.params.id]);
@@ -23,6 +25,7 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+// 创建新分类
 router.post('/', async (req, res) => {
     try {
         const { name, icon, sort_order } = req.body;
