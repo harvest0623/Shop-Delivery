@@ -49,7 +49,7 @@
                     @click="goToShop(shop.id)"
                 >
                     <div class="shop-image-wrapper">
-                        <img :src="shop.image_url" :alt="shop.name" class="shop-image" />
+                        <img :src="shop.image_url" :alt="shop.name" class="shop-image" @error="handleImageError($event, 'shop')" />
                         <div class="shop-badge" v-if="shop.rating >= 4.8">🔥 热门</div>
                         <div class="delivery-time">🚀 {{ shop.delivery_time }}分钟</div>
                     </div>
@@ -120,16 +120,17 @@ onMounted(async () => {
 <style scoped>
 .shops-page {
     min-height: 100vh;
-    background: #f8f9fa;
+    background: linear-gradient(180deg, #FFF5F5 0%, #F8F9FA 300px, #F8F9FA 100%);
     padding-bottom: 80px;
 }
 
 .header-section {
-    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-    padding: 30px 15px 20px;
+    background: linear-gradient(135deg, #FF4757 0%, #FF6B81 100%);
+    padding: 30px 15px 28px;
     position: sticky;
     top: 0;
     z-index: 100;
+    border-radius: 0 0 24px 24px;
 }
 
 .back-btn {
@@ -138,7 +139,7 @@ onMounted(async () => {
     left: 15px;
     width: 36px;
     height: 36px;
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -149,7 +150,7 @@ onMounted(async () => {
 }
 
 .back-btn:hover {
-    background: rgba(255,255,255,0.3);
+    background: rgba(255, 255, 255, 0.35);
     transform: scale(1.1);
 }
 
@@ -173,7 +174,7 @@ onMounted(async () => {
 
 .header-content p {
     margin: 0;
-    color: rgba(255,255,255,0.9);
+    color: rgba(255, 255, 255, 0.9);
     font-size: 14px;
 }
 
@@ -183,9 +184,14 @@ onMounted(async () => {
     background: white;
     border-radius: 30px;
     padding: 12px 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     max-width: 500px;
     margin: 0 auto;
+    transition: box-shadow 0.3s ease;
+}
+
+.search-bar:focus-within {
+    box-shadow: 0 4px 20px rgba(255, 71, 87, 0.3), 0 0 0 3px rgba(255, 107, 129, 0.2);
 }
 
 .search-icon {
@@ -203,7 +209,7 @@ onMounted(async () => {
 
 .shops-container {
     padding: 20px 15px;
-    max-width: 800px;
+    max-width: 1100px;
     margin: 0 auto;
 }
 
@@ -211,10 +217,10 @@ onMounted(async () => {
     display: flex;
     justify-content: space-around;
     background: white;
-    border-radius: 16px;
+    border-radius: 12px;
     padding: 20px;
     margin-bottom: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 .stat-item {
@@ -225,7 +231,7 @@ onMounted(async () => {
     display: block;
     font-size: 24px;
     font-weight: 700;
-    color: #ff6b6b;
+    color: #FF4757;
 }
 
 .stat-label {
@@ -235,85 +241,103 @@ onMounted(async () => {
 }
 
 .loading {
-    text-align: center;
-    padding: 60px 20px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 0;
 }
 
-.loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid #f0f0f0;
-    border-top-color: #ff6b6b;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 15px;
+.loading .loading-spinner,
+.loading p {
+    display: none;
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
+.loading::before,
+.loading::after {
+    content: '';
+    display: block;
+    height: 300px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+    background-size: 800px 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+    border-radius: 16px;
+}
+
+@keyframes shimmer {
+    0% { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
 }
 
 .empty {
     text-align: center;
-    padding: 60px 20px;
+    padding: 80px 20px;
     background: white;
     border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 .empty-icon {
-    font-size: 48px;
-    margin-bottom: 15px;
+    font-size: 64px;
+    margin-bottom: 20px;
 }
 
 .empty h3 {
     margin: 0 0 8px;
     color: #333;
+    font-size: 18px;
 }
 
 .empty p {
     margin: 0;
-    color: #888;
+    color: #999;
+    font-size: 14px;
 }
 
 .shops-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 15px;
+    gap: 16px;
 }
 
 .shop-card {
     display: flex;
+    flex-direction: column;
     background: white;
     border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .shop-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
 }
 
 .shop-image-wrapper {
     position: relative;
-    width: 130px;
-    height: 130px;
-    flex-shrink: 0;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
 }
 
 .shop-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.shop-card:hover .shop-image {
+    transform: scale(1.05);
 }
 
 .shop-badge {
     position: absolute;
-    top: 8px;
-    left: 8px;
-    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    top: 12px;
+    left: 12px;
+    background: linear-gradient(135deg, #FF4757 0%, #FF6B81 100%);
     color: white;
     font-size: 11px;
     padding: 4px 10px;
@@ -323,41 +347,43 @@ onMounted(async () => {
 
 .delivery-time {
     position: absolute;
-    bottom: 8px;
-    right: 8px;
-    background: rgba(0,0,0,0.7);
+    bottom: 12px;
+    right: 12px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
     color: white;
-    font-size: 11px;
-    padding: 4px 8px;
-    border-radius: 8px;
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 10px;
+    font-weight: 500;
 }
 
 .shop-info {
     flex: 1;
-    padding: 15px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    gap: 10px;
 }
 
 .shop-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 6px;
 }
 
 .shop-header h3 {
     margin: 0;
     font-size: 17px;
     font-weight: 700;
-    color: #333;
+    color: #1a1a1a;
 }
 
 .rating {
     display: flex;
     align-items: center;
     gap: 4px;
+    flex-shrink: 0;
 }
 
 .star {
@@ -367,11 +393,11 @@ onMounted(async () => {
 .score {
     font-size: 15px;
     font-weight: 700;
-    color: #ff9500;
+    color: #FF9500;
 }
 
 .shop-desc {
-    margin: 0 0 8px;
+    margin: 0;
     font-size: 13px;
     color: #888;
     overflow: hidden;
@@ -382,22 +408,37 @@ onMounted(async () => {
 .shop-tags {
     display: flex;
     gap: 8px;
-    margin-bottom: 8px;
+    flex-wrap: wrap;
 }
 
 .tag {
     padding: 4px 10px;
-    background: #fff5f5;
-    color: #ff6b6b;
     font-size: 12px;
     border-radius: 10px;
     font-weight: 500;
+}
+
+.tag:nth-child(1) {
+    background: #FFF0F0;
+    color: #FF4757;
+}
+
+.tag:nth-child(2) {
+    background: #FFF8E6;
+    color: #FF9500;
+}
+
+.tag:nth-child(3) {
+    background: #E8F8EE;
+    color: #2ED573;
 }
 
 .shop-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid #f5f5f5;
 }
 
 .address {
@@ -411,6 +452,20 @@ onMounted(async () => {
 @media (min-width: 768px) {
     .shops-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .loading {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .shops-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .loading {
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 </style>

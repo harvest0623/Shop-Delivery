@@ -158,44 +158,79 @@ const goToLogin = () => {
 <style scoped>
 .register-page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #f0f2f5;
     display: flex;
     align-items: center;
+    justify-content: flex-end;
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.6s ease;
+}
+
+.register-page::before {
+    content: "🍔\A\A加入我们\A\A创建账户，享受专属优惠\A\A✅ 专属优惠折扣\A✅ AI智能推荐\A✅ 积分奖励体系";
+    white-space: pre-wrap;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
-    padding: 20px;
+    color: white;
+    font-size: 18px;
+    line-height: 2;
+    text-align: center;
+    padding: 40px;
+    box-sizing: border-box;
 }
 
 .register-container {
     width: 100%;
-    max-width: 420px;
+    max-width: 480px;
+    position: relative;
+    z-index: 1;
+    margin-right: 5%;
 }
 
 .register-card {
     background: white;
     border-radius: 20px;
-    padding: 40px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    padding: 48px 40px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.register-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.2);
 }
 
 .register-header {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 32px;
 }
 
 .register-header h1 {
     font-size: 28px;
     color: #333;
     margin-bottom: 8px;
+    font-weight: 700;
 }
 
 .register-header p {
-    color: #888;
+    color: #999;
+    font-size: 14px;
 }
 
 .register-form {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 18px;
 }
 
 .form-group {
@@ -211,26 +246,32 @@ const goToLogin = () => {
 }
 
 .form-input {
-    padding: 15px;
-    border: 2px solid #e0e0e0;
+    width: 100%;
+    height: 50px;
+    padding: 0 16px;
+    border: 2px solid #e8e8e8;
     border-radius: 12px;
-    font-size: 16px;
+    font-size: 15px;
+    background: #f8f9fa;
     outline: none;
     transition: all 0.3s ease;
+    box-sizing: border-box;
 }
 
 .form-input:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #e74c3c;
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+    background: #fff;
 }
 
 .form-input::placeholder {
-    color: #aaa;
+    color: #bbb;
 }
 
 .register-btn {
-    padding: 16px;
-    margin-top: 10px;
+    width: 100%;
+    height: 50px;
+    margin-top: 8px;
     border: none;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -239,11 +280,16 @@ const goToLogin = () => {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
+    letter-spacing: 1px;
 }
 
 .register-btn:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.register-btn:active:not(:disabled) {
+    transform: translateY(0);
 }
 
 .register-btn:disabled {
@@ -258,6 +304,7 @@ const goToLogin = () => {
     border-radius: 8px;
     font-size: 14px;
     text-align: center;
+    animation: fadeInUp 0.3s ease;
 }
 
 .success-message {
@@ -267,29 +314,69 @@ const goToLogin = () => {
     border-radius: 8px;
     font-size: 14px;
     text-align: center;
+    animation: fadeInUp 0.3s ease;
 }
 
 .register-footer {
-    margin-top: 30px;
+    margin-top: 28px;
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
 }
 
 .register-footer p {
-    color: #888;
-    margin-bottom: 10px;
+    color: #999;
+    margin-bottom: 0;
+    font-size: 14px;
 }
 
 .login-link {
     background: none;
     border: none;
     color: #667eea;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: color 0.3s ease;
+    transition: all 0.3s ease;
+    padding: 0;
+    display: inline-block;
 }
 
 .login-link:hover {
     color: #764ba2;
+    transform: scale(1.05);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .register-page::before {
+        display: none;
+    }
+
+    .register-page {
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .register-container {
+        max-width: 100%;
+        margin-right: 0;
+    }
+
+    .register-card {
+        padding: 32px 24px;
+    }
 }
 </style>

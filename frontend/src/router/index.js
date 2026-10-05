@@ -32,6 +32,11 @@ const routes = [
         component: () => import('../views/Orders.vue')
     },
     {
+        path: '/orders/:id',
+        name: 'order-detail',
+        component: () => import('../views/OrderDetail.vue')
+    },
+    {
         path: '/profile',
         name: 'profile',
         component: () => import('../views/Profile.vue')
@@ -55,6 +60,46 @@ const routes = [
         path: '/statistics',
         name: 'statistics',
         component: () => import('../views/Statistics.vue')
+    },
+    {
+        path: '/points',
+        name: 'points',
+        component: () => import('../views/Points.vue')
+    },
+    {
+        path: '/recommendations',
+        name: 'recommendations',
+        component: () => import('../views/Recommendations.vue')
+    },
+    {
+        path: '/notifications',
+        name: 'notifications',
+        component: () => import('../views/Notifications.vue')
+    },
+    {
+        path: '/favorites',
+        name: 'favorites',
+        component: () => import('../views/Favorites.vue')
+    },
+    {
+        path: '/reviews/:productId',
+        name: 'reviews',
+        component: () => import('../views/Reviews.vue')
+    },
+    {
+        path: '/categories',
+        name: 'categories',
+        component: () => import('../views/Categories.vue')
+    },
+    {
+        path: '/deals',
+        name: 'deals',
+        component: () => import('../views/Deals.vue')
+    },
+    {
+        path: '/vip',
+        name: 'vip',
+        component: () => import('../views/VipCenter.vue')
     }
 ]
 

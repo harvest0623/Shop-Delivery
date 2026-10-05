@@ -5,7 +5,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3005;
 
 app.use(cors());
 app.use(express.json());
@@ -31,6 +31,12 @@ app.use('/api/products', require('./routes/products'));
 app.use('/api/categories', require('./routes/categories'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/statistics', require('./routes/statistics'));
+app.use('/api/reviews', require('./routes/reviews'));
+app.use('/api/favorites', require('./routes/favorites'));
+app.use('/api/points', require('./routes/points'));
+app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/recommendations', require('./routes/recommendations'));
+app.use('/api/ai', require('./routes/ai'));
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

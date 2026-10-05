@@ -125,6 +125,16 @@ router.post('/', async (req, res) => {
   }
 });
 
+// 模拟支付
+router.put('/:id/pay', async (req, res) => {
+  try {
+    await pool.query('UPDATE orders SET status = ? WHERE id = ?', ['paid', req.params.id]);
+    res.json({ success: true, message: '支付成功' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // 更新订单状态
 router.put('/:id/status', async (req, res) => {
   try {

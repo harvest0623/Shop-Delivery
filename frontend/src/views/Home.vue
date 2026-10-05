@@ -16,11 +16,35 @@
                     <a href="/orders" class="nav-link">订单</a>
                 </nav>
                 <div class="header-actions">
-                    <div class="search-box" @click="goToSearch">
-                        <span class="search-icon">🔍</span>
-                        <span class="search-text">搜索美食...</span>
+                    <div class="search-wrapper" :class="{ focused: searchFocused }">
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input 
+                                class="search-input" 
+                                v-model="searchQuery"
+                                placeholder="搜索美食..."
+                                @focus="searchFocused = true"
+                                @blur="handleSearchBlur"
+                                @keyup.enter="handleSearch"
+                            />
+                        </div>
+                        <div class="hot-search-dropdown" v-if="searchFocused && !searchQuery">
+                            <div class="hot-search-title">🔥 热门搜索</div>
+                            <div class="hot-search-tags">
+                                <span 
+                                    v-for="tag in hotSearches" 
+                                    :key="tag" 
+                                    class="hot-tag"
+                                    @mousedown.prevent="onHotTagClick(tag)"
+                                >{{ tag }}</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="action-btns">
+                        <span class="action-btn notify-btn" @click="goToPage('/notifications')">
+                            🔔
+                            <span class="notify-badge" v-if="unreadCount > 0">{{ unreadCount }}</span>
+                        </span>
                         <span class="action-btn cart-btn" @click="goToCart">
                             🛒
                             <span class="cart-badge" v-if="cartCount > 0">{{ cartCount }}</span>
@@ -147,23 +171,29 @@
                     </div>
                     <span class="access-text">优惠券</span>
                 </div>
-                <div class="access-item">
+                <div class="access-item" @click="goToPage('/favorites')">
                     <div class="access-icon-wrap" style="--icon-color: #DDA0DD; --icon-bg: linear-gradient(135deg, #F8F0F8 0%, #F0E0F0 100%);">
                         <span class="access-icon">❤️</span>
                     </div>
                     <span class="access-text">我的收藏</span>
                 </div>
-                <div class="access-item">
-                    <div class="access-icon-wrap" style="--icon-color: #98D8C8; --icon-bg: linear-gradient(135deg, #F0F8F5 0%, #E0F0E8 100%);">
-                        <span class="access-icon">📍</span>
+                <div class="access-item" @click="goToPage('/recommendations')">
+                    <div class="access-icon-wrap" style="--icon-color: #667eea; --icon-bg: linear-gradient(135deg, #F0F0FF 0%, #E0E0FF 100%);">
+                        <span class="access-icon">🤖</span>
                     </div>
-                    <span class="access-text">收货地址</span>
+                    <span class="access-text">AI推荐</span>
                 </div>
-                <div class="access-item">
-                    <div class="access-icon-wrap" style="--icon-color: #F7DC6F; --icon-bg: linear-gradient(135deg, #FEF9E7 0%, #FEF3C7 100%);">
-                        <span class="access-icon">💬</span>
+                <div class="access-item" @click="goToPage('/points')">
+                    <div class="access-icon-wrap" style="--icon-color: #FF6B35; --icon-bg: linear-gradient(135deg, #FFF5F0 0%, #FFE8D0 100%);">
+                        <span class="access-icon">🎯</span>
                     </div>
-                    <span class="access-text">客服中心</span>
+                    <span class="access-text">积分任务</span>
+                </div>
+                <div class="access-item" @click="goToPage('/notifications')">
+                    <div class="access-icon-wrap" style="--icon-color: #4A90D9; --icon-bg: linear-gradient(135deg, #F0F5FF 0%, #E0EAFF 100%);">
+                        <span class="access-icon">�</span>
+                    </div>
+                    <span class="access-text">消息通知</span>
                 </div>
             </div>
         </section>
@@ -184,14 +214,57 @@
             </div>
             <div class="category-grid">
                 <div 
-                    v-for="cat in categories" 
+                    v-for="(cat, idx) in categories" 
                     :key="cat.id"
                     class="category-card"
                     @click="goToProducts"
                 >
-                    <div class="category-icon">{{ cat.icon }}</div>
+                    <div class="category-icon-wrap" :style="{ background: categoryColors[idx % categoryColors.length].bg }">
+                        <span class="category-icon">{{ cat.icon }}</span>
+                    </div>
                     <span class="category-name">{{ cat.name }}</span>
-                    <div class="category-shine"></div>
+                </div>
+            </div>
+        </section>
+
+        <div class="dice-section">
+            <div class="dice-card" @click="rollDice">
+                <div class="dice-content" :class="{ rolling: isDiceRolling }">
+                    <span class="dice-emoji">🎲</span>
+                    <span class="dice-text" v-if="!diceResult">今天吃什么？</span>
+                    <span class="dice-result" v-else>
+                        <span class="result-name">{{ diceResult.name }}</span>
+                        <span class="result-action" @click.stop="goToDiceShop">去看看 →</span>
+                    </span>
+                </div>
+                <span class="dice-hint">点击随机推荐</span>
+            </div>
+        </div>
+
+        <section class="banner-carousel scroll-animate">
+            <div 
+                class="carousel-container"
+                @mouseenter="pauseBanner"
+                @mouseleave="resumeBanner"
+            >
+                <div class="carousel-track" :style="{ transform: `translateX(-${currentBanner * 100}%)` }">
+                    <div 
+                        v-for="(slide, idx) in bannerSlides" 
+                        :key="idx" 
+                        class="carousel-slide" 
+                        :style="{ background: slide.bg }"
+                    >
+                        <span class="slide-text">{{ slide.text }}</span>
+                    </div>
+                </div>
+                <div class="carousel-dots">
+                    <span 
+                        v-for="(_, idx) in bannerSlides" 
+                        :key="idx" 
+                        class="dot" 
+                        :class="{ active: currentBanner === idx }"
+                        @click="currentBanner = idx"
+                    ></span>
                 </div>
             </div>
         </section>
@@ -286,7 +359,7 @@
                             :src="product.image_url" 
                             :alt="product.name" 
                             class="product-image"
-                            @error="handleImageError"
+                            @error="handleImageError($event, 'product')"
                         />
                         <div class="featured-badge" v-if="product.is_featured">
                             <span class="badge-fire">🔥</span>
@@ -331,6 +404,81 @@
                         <div class="coupon-value">¥20</div>
                         <div class="coupon-label">新人券</div>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="ai-insights-panel" v-if="user && aiInsights">
+            <div class="insights-header">
+                <span class="insights-icon">🧠</span>
+                <span class="insights-title">AI数据分析</span>
+                <span class="insights-badge">LangChain驱动</span>
+            </div>
+            <div class="insights-grid">
+                <div class="insight-card" v-for="(value, key) in aiInsights" :key="key">
+                    <span class="insight-key">{{ key }}</span>
+                    <span class="insight-value">{{ value }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI今日推荐 -->
+        <section class="ai-section scroll-animate delay-3">
+            <div class="section-header">
+                <div class="section-title">
+                    <div class="title-line-bar" style="background: linear-gradient(135deg, #667eea, #764ba2);"></div>
+                    <h2>🤖 AI今日推荐</h2>
+                    <span class="ai-badge">智能</span>
+                </div>
+                <a href="/recommendations" class="view-more">
+                    查看全部推荐
+                    <svg class="more-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            </div>
+            <div class="ai-recommend-cards" v-if="aiRecommendations.length">
+                <div 
+                    v-for="item in aiRecommendations.slice(0, 4)" 
+                    :key="item.product_id || item.id"
+                    class="ai-card"
+                    @click="goToProductDetail(item.product_id || item.id)"
+                >
+                    <div class="ai-card-img">
+                        <img :src="item.image_url || item.product_image" :alt="item.name || item.product_name" @error="handleImageError"/>
+                        <div class="ai-tag">{{ item.recommend_reason || '智能推荐' }}</div>
+                    </div>
+                    <div class="ai-card-info">
+                        <h4>{{ item.name || item.product_name }}</h4>
+                        <p class="ai-shop">{{ item.shop_name }}</p>
+                        <div class="ai-price">¥{{ Number(item.price).toFixed(2) }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="ai-empty" v-else>
+                <div class="ai-empty-icon">🤖</div>
+                <p>登录后享受个性化AI推荐</p>
+                <a href="/login" class="ai-login-btn">立即登录</a>
+            </div>
+        </section>
+
+        <!-- 每日任务入口 -->
+        <section class="task-banner scroll-animate delay-3">
+            <div class="task-banner-inner">
+                <div class="task-left">
+                    <div class="task-icon">🎯</div>
+                    <div class="task-info">
+                        <h3>每日任务赚积分</h3>
+                        <p>签到、浏览、下单都能获得积分奖励</p>
+                    </div>
+                </div>
+                <div class="task-right">
+                    <div class="task-badges">
+                        <span class="task-badge">✅ 签到+10</span>
+                        <span class="task-badge">🛒 下单+50</span>
+                        <span class="task-badge">⭐ 评价+15</span>
+                    </div>
+                    <a href="/points" class="task-go-btn">去完成</a>
                 </div>
             </div>
         </section>
@@ -432,6 +580,39 @@ const products = ref([])
 const categories = ref([])
 const cartCount = ref(0)
 const isScrolled = ref(false)
+const aiRecommendations = ref([])
+const unreadCount = ref(0)
+const aiInsights = ref(null)
+
+const fetchAiInsights = async () => {
+    if (!user.value?.id) return
+    try {
+        const res = await axios.get(`/api/ai/insights/${user.value.id}`)
+        aiInsights.value = res.data
+    } catch (e) {}
+}
+
+const searchFocused = ref(false)
+const searchQuery = ref('')
+const isDiceRolling = ref(false)
+const diceResult = ref(null)
+const hotSearches = ['麻辣烫', '奶茶', '炸鸡', '汉堡', '披萨', '沙拉']
+const currentBanner = ref(0)
+let bannerTimer = null
+const bannerPaused = ref(false)
+const bannerSlides = [
+    { text: '🎉 新人专享 首单立减10元', bg: 'linear-gradient(135deg, #FF4757, #FF6B81)' },
+    { text: '🤖 AI智能推荐 猜你喜欢', bg: 'linear-gradient(135deg, #667eea, #764ba2)' },
+    { text: '🔥 限时秒杀 低至5折', bg: 'linear-gradient(135deg, #FF6B35, #F7931E)' }
+]
+const categoryColors = [
+    { bg: 'linear-gradient(135deg, #FF6B6B, #EE5A24)' },
+    { bg: 'linear-gradient(135deg, #a855f7, #7c3aed)' },
+    { bg: 'linear-gradient(135deg, #FF8C42, #FF6B35)' },
+    { bg: 'linear-gradient(135deg, #FF85A1, #FF6B81)' },
+    { bg: 'linear-gradient(135deg, #4ECDC4, #2196F3)' },
+    { bg: 'linear-gradient(135deg, #56ab2f, #a8e063)' }
+]
 
 const featuredProducts = computed(() => {
     return products.value.filter(p => p.is_featured).slice(0, 8)
@@ -458,6 +639,8 @@ const goToOrders = () => window.location.href = '/orders'
 const goToProfile = () => window.location.href = '/profile'
 const goToCart = () => window.location.href = '/cart'
 const goToShop = (id) => window.location.href = `/shop/${id}`
+const goToProductDetail = (id) => window.location.href = `/reviews/${id}`
+const goToPage = (path) => window.location.href = path
 
 const addToCart = (product) => {
     const cart = JSON.parse(localStorage.getItem('cart') || '[]')
@@ -483,6 +666,65 @@ const addToCart = (product) => {
     btn.classList.add('clicked')
     setTimeout(() => btn.classList.remove('clicked'), 300)
 }
+
+const handleSearchBlur = () => {
+    setTimeout(() => { searchFocused.value = false }, 150)
+}
+
+const onHotTagClick = (tag) => {
+    searchQuery.value = tag
+    searchFocused.value = false
+    window.location.href = '/products?search=' + encodeURIComponent(tag)
+}
+
+const handleSearch = () => {
+    if (searchQuery.value.trim()) {
+        window.location.href = '/products?search=' + encodeURIComponent(searchQuery.value.trim())
+    }
+}
+
+const rollDice = async () => {
+    if (isDiceRolling.value) return
+    isDiceRolling.value = true
+    diceResult.value = null
+    try {
+        const res = await axios.get('/api/products')
+        const allProducts = res.data
+        let count = 0
+        const interval = setInterval(() => {
+            diceResult.value = allProducts[Math.floor(Math.random() * allProducts.length)]
+            count++
+            if (count >= 10) {
+                clearInterval(interval)
+                diceResult.value = allProducts[Math.floor(Math.random() * allProducts.length)]
+                isDiceRolling.value = false
+            }
+        }, 100)
+    } catch (e) {
+        isDiceRolling.value = false
+    }
+}
+
+const goToDiceShop = () => {
+    if (!diceResult.value) return
+    const id = diceResult.value.shop_id
+    if (id) {
+        window.location.href = '/shop/' + id
+    } else {
+        window.location.href = '/products'
+    }
+}
+
+const startBannerTimer = () => {
+    bannerTimer = setInterval(() => {
+        if (!bannerPaused.value) {
+            currentBanner.value = (currentBanner.value + 1) % bannerSlides.length
+        }
+    }, 3000)
+}
+
+const pauseBanner = () => { bannerPaused.value = true }
+const resumeBanner = () => { bannerPaused.value = false }
 
 // 滚动监听
 const handleScroll = () => {
@@ -522,11 +764,27 @@ onMounted(async () => {
     const cart = JSON.parse(localStorage.getItem('cart') || '[]')
     cartCount.value = cart.reduce((sum, item) => sum + item.quantity, 0)
     
+    try {
+        const user = JSON.parse(localStorage.getItem('user'))
+        if (user && user.id) {
+            const recRes = await axios.get(`/api/recommendations/${user.id}`)
+            aiRecommendations.value = recRes.data.recommendations || recRes.data || []
+            try {
+                const notiRes = await axios.get(`/api/notifications/unread-count/${user.id}`)
+                unreadCount.value = notiRes.data.count || 0
+            } catch (e) {}
+        }
+    } catch (e) {
+        aiRecommendations.value = []
+    }
+    
     setTimeout(initScrollAnimation, 100)
+    startBannerTimer()
 })
 
 onUnmounted(() => {
     window.removeEventListener('scroll', handleScroll)
+    clearInterval(bannerTimer)
 })
 </script>
 
@@ -656,6 +914,82 @@ onUnmounted(() => {
     color: #999;
 }
 
+.search-wrapper {
+    position: relative;
+}
+
+.search-wrapper .search-box {
+    width: 220px;
+    transition: all 0.3s ease;
+}
+
+.search-wrapper.focused .search-box {
+    width: 300px;
+    border-color: rgba(255, 107, 107, 0.4);
+    background: white;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.search-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 14px;
+    color: #333;
+    width: 100%;
+    font-family: inherit;
+}
+
+.search-input::placeholder {
+    color: #999;
+}
+
+.hot-search-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+    z-index: 100;
+    animation: fadeInDown 0.2s ease;
+}
+
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.hot-search-title {
+    font-size: 13px;
+    color: #999;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.hot-search-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.hot-tag {
+    padding: 6px 14px;
+    background: #f5f5f5;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.hot-tag:hover {
+    background: rgba(255, 107, 107, 0.1);
+    color: #FF6B6B;
+}
+
 .action-btns {
     display: flex;
     gap: 10px;
@@ -698,6 +1032,28 @@ onUnmounted(() => {
     justify-content: center;
     padding: 0 6px;
     box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+}
+
+.notify-btn {
+    position: relative;
+}
+
+.notify-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 18px;
+    height: 18px;
+    background: linear-gradient(135deg, #FF4757 0%, #FF6B81 100%);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
 }
 
 /* ===== 主横幅Banner ===== */
@@ -1254,13 +1610,23 @@ onUnmounted(() => {
     color: #FF6B6B;
 }
 
-.category-icon {
-    font-size: 40px;
+.category-icon-wrap {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: transform 0.3s;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
 }
 
-.category-card:hover .category-icon {
+.category-card:hover .category-icon-wrap {
     transform: scale(1.15);
+}
+
+.category-icon {
+    font-size: 32px;
 }
 
 .category-name {
@@ -1282,6 +1648,85 @@ onUnmounted(() => {
 
 .category-card:hover .category-shine {
     left: 100%;
+}
+
+.dice-section { padding: 0 16px; margin-bottom: 16px; }
+.dice-card {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 16px;
+  padding: 20px;
+  color: white;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.2s;
+}
+.dice-card:hover { transform: scale(1.02); }
+.dice-content { min-height: 50px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.dice-emoji { font-size: 36px; transition: transform 0.3s; }
+.rolling .dice-emoji { animation: diceRoll 0.1s infinite; }
+@keyframes diceRoll { 0% { transform: rotate(0deg); } 50% { transform: rotate(180deg); } 100% { transform: rotate(360deg); } }
+.dice-text { font-size: 16px; font-weight: 600; }
+.dice-result { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.result-name { font-size: 18px; font-weight: 700; }
+.result-action { font-size: 13px; opacity: 0.8; text-decoration: underline; }
+.dice-hint { font-size: 12px; opacity: 0.6; margin-top: 4px; }
+
+/* ===== 轮播Banner ===== */
+.banner-carousel {
+    max-width: 1280px;
+    margin: 0 auto 50px;
+    padding: 0 32px;
+}
+
+.carousel-container {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+}
+
+.carousel-track {
+    display: flex;
+    transition: transform 0.5s ease;
+}
+
+.carousel-slide {
+    min-width: 100%;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.slide-text {
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.carousel-dots {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.4);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.dot.active {
+    width: 24px;
+    background: white;
 }
 
 /* ===== 热门商家 ===== */
@@ -2022,6 +2467,232 @@ onUnmounted(() => {
     .footer-bottom {
         flex-direction: column;
         gap: 16px;
+    }
+}
+
+/* ===== AI今日推荐 ===== */
+.ai-section {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 40px 32px;
+}
+
+.ai-badge {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+    font-weight: 600;
+}
+
+.ai-recommend-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.ai-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.ai-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.15);
+}
+
+.ai-card-img {
+    position: relative;
+    height: 160px;
+    overflow: hidden;
+}
+
+.ai-card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.ai-card:hover .ai-card-img img {
+    transform: scale(1.06);
+}
+
+.ai-tag {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.ai-card-info {
+    padding: 14px;
+}
+
+.ai-card-info h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ai-shop {
+    font-size: 12px;
+    color: #999;
+    margin: 0 0 8px;
+}
+
+.ai-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: #FF4757;
+}
+
+.ai-empty {
+    text-align: center;
+    padding: 40px 20px;
+    background: white;
+    border-radius: 16px;
+    margin-top: 20px;
+}
+
+.ai-empty-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.ai-empty p {
+    color: #999;
+    margin: 0 0 16px;
+}
+
+.ai-login-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 8px 24px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* ===== 每日任务横幅 ===== */
+.task-banner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 32px 40px;
+}
+
+.task-banner-inner {
+    background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+    border-radius: 20px;
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: white;
+    box-shadow: 0 8px 30px rgba(255, 107, 53, 0.3);
+}
+
+.task-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.task-icon {
+    font-size: 36px;
+}
+
+.task-info h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 4px;
+}
+
+.task-info p {
+    font-size: 13px;
+    opacity: 0.9;
+    margin: 0;
+}
+
+.task-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.task-badges {
+    display: flex;
+    gap: 8px;
+}
+
+.task-badge {
+    background: rgba(255,255,255,0.2);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.task-go-btn {
+    background: white;
+    color: #FF6B35;
+    padding: 10px 24px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.task-go-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+@media (max-width: 768px) {
+    .ai-recommend-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .task-banner-inner {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+    
+    .task-right {
+        flex-direction: column;
+    }
+    
+    .task-badges {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .ai-recommend-cards {
+        grid-template-columns: 1fr;
     }
 }
 </style>

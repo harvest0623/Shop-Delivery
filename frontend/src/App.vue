@@ -2,6 +2,9 @@
 import { computed } from 'vue'
 import NavBar from './components/NavBar.vue'
 import Footer from './components/Footer.vue'
+import BottomTabBar from './components/BottomTabBar.vue'
+import Toast from './components/Toast.vue'
+import AiChat from './components/AiChat.vue'
 
 const showNavFooter = computed(() => {
     const path = window.location.pathname
@@ -15,7 +18,10 @@ const showNavFooter = computed(() => {
         <main>
             <router-view />
         </main>
+        <BottomTabBar />
         <Footer v-if="showNavFooter" />
+        <Toast />
+        <AiChat />
     </div>
 </template>
 
@@ -34,6 +40,13 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    padding-bottom: 0;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding-bottom: 60px;
+    }
 }
 
 .app {

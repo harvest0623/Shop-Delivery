@@ -552,11 +552,11 @@ INSERT INTO shops (name, description, address, phone, image_url, rating, deliver
 
 -- 8.3 Customers (password is bcrypt hashed 'admin')
 INSERT INTO customers (username, password, email, phone, nickname) VALUES
-('admin', '$2a$10$YourHashedPasswordHere', 'admin@shop.com', '13800138000', 'Administrator'),
-('user1', '$2a$10$YourHashedPasswordHere', 'user1@example.com', '13800138001', 'Foodie'),
-('user2', '$2a$10$YourHashedPasswordHere', 'user2@example.com', '13800138002', 'Delivery Prince'),
-('zhangsan', '$2a$10$YourHashedPasswordHere', 'zhangsan@example.com', '13900139001', 'Zhang San'),
-('lisi', '$2a$10$YourHashedPasswordHere', 'lisi@example.com', '13900139002', 'Li Si');
+('admin', '$2a$10$Ec7cQc0qPvaLcdrR3vjV8.9QiJBq3IHNMN4HmfCZFz0LGF9DMfAI6', 'admin@shop.com', '13800138000', 'Administrator'),
+('user1', '$2a$10$Ec7cQc0qPvaLcdrR3vjV8.9QiJBq3IHNMN4HmfCZFz0LGF9DMfAI6', 'user1@example.com', '13800138001', 'Foodie'),
+('user2', '$2a$10$Ec7cQc0qPvaLcdrR3vjV8.9QiJBq3IHNMN4HmfCZFz0LGF9DMfAI6', 'user2@example.com', '13800138002', 'Delivery Prince'),
+('zhangsan', '$2a$10$Ec7cQc0qPvaLcdrR3vjV8.9QiJBq3IHNMN4HmfCZFz0LGF9DMfAI6', 'zhangsan@example.com', '13900139001', 'Zhang San'),
+('lisi', '$2a$10$Ec7cQc0qPvaLcdrR3vjV8.9QiJBq3IHNMN4HmfCZFz0LGF9DMfAI6', 'lisi@example.com', '13900139002', 'Li Si');
 
 -- 8.4 Addresses
 INSERT INTO addresses (customer_id, name, phone, province, city, district, detail, is_default) VALUES

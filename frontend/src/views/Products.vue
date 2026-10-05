@@ -10,8 +10,17 @@
             </div>
             <div class="search-bar">
                 <span class="search-icon">🔍</span>
-                <input v-model="searchQuery" placeholder="搜索美食..." class="search-input" />
+                <input v-model="searchQuery" placeholder="搜索美食..." class="search-input" @keyup.enter="useAiSearch ? doAiSearch() : null" />
+                <button class="ai-search-btn" :class="{ active: useAiSearch }" @click="toggleAiSearch" title="AI智能搜索">
+                    🤖
+                </button>
             </div>
+        </div>
+
+        <div v-if="aiSearchIntent" class="ai-search-banner">
+            <span class="ai-search-icon">🤖</span>
+            <span class="ai-search-text">{{ aiSearchIntent }}</span>
+            <span class="ai-search-close" @click="clearAiSearch">✕</span>
         </div>
 
         <div class="category-tabs">
@@ -26,6 +35,13 @@
                 <span class="cat-name">{{ cat.name }}</span>
                 <span class="cat-count">{{ cat.count }}</span>
             </div>
+        </div>
+
+        <div class="sort-bar" v-if="!loading && products.length > 0">
+            <div class="sort-item" :class="{ active: sortBy === 'default' }" @click="sortBy = 'default'">综合</div>
+            <div class="sort-item" :class="{ active: sortBy === 'price-asc' }" @click="sortBy = 'price-asc'">价格↑</div>
+            <div class="sort-item" :class="{ active: sortBy === 'price-desc' }" @click="sortBy = 'price-desc'">价格↓</div>
+            <div class="sort-item" :class="{ active: sortBy === 'newest' }" @click="sortBy = 'newest'">最新</div>
         </div>
 
         <div class="products-container">
@@ -47,7 +63,7 @@
                     class="product-card"
                 >
                     <div class="product-image-wrapper">
-                        <img :src="product.image_url" :alt="product.name" class="product-image" />
+                        <img :src="product.image_url" :alt="product.name" class="product-image" @error="handleImageError($event, 'product')" />
                         <div class="product-badge" v-if="product.is_featured">🔥 招牌</div>
                     </div>
                     <div class="product-info">
@@ -73,6 +89,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
+import { toast } from '../utils/toast'
 
 const products = ref([])
 const shops = ref([])
@@ -80,8 +97,41 @@ const categories = ref([])
 const searchQuery = ref('')
 const activeCategory = ref(0)
 const loading = ref(true)
+const sortBy = ref('default')
+const useAiSearch = ref(false)
+const aiSearchIntent = ref('')
+const aiSearchProducts = ref([])
+const aiSearching = ref(false)
+
+const toggleAiSearch = () => {
+    useAiSearch.value = !useAiSearch.value
+    if (!useAiSearch.value) clearAiSearch()
+}
+
+const clearAiSearch = () => {
+    aiSearchIntent.value = ''
+    aiSearchProducts.value = []
+    useAiSearch.value = false
+}
+
+const doAiSearch = async () => {
+    if (!searchQuery.value.trim()) return
+    aiSearching.value = true
+    try {
+        const res = await axios.post('/api/ai/semantic-search', { query: searchQuery.value.trim() })
+        aiSearchIntent.value = res.data.intent || ''
+        aiSearchProducts.value = res.data.products || []
+    } catch (e) {
+        aiSearchIntent.value = '搜索出错，请重试'
+        aiSearchProducts.value = []
+    }
+    aiSearching.value = false
+}
 
 const filteredProducts = computed(() => {
+    if (useAiSearch.value && aiSearchProducts.value.length > 0) {
+        return aiSearchProducts.value
+    }
     let result = products.value
 
     if (activeCategory.value !== 0) {
@@ -95,6 +145,10 @@ const filteredProducts = computed(() => {
             (p.description && p.description.toLowerCase().includes(query))
         )
     }
+
+    if (sortBy.value === 'price-asc') result = [...result].sort((a, b) => a.price - b.price)
+    else if (sortBy.value === 'price-desc') result = [...result].sort((a, b) => b.price - a.price)
+    else if (sortBy.value === 'newest') result = [...result].sort((a, b) => b.id - a.id)
 
     return result
 })
@@ -139,7 +193,7 @@ const addToCart = (product) => {
         })
     }
     localStorage.setItem('cart', JSON.stringify(cart))
-    alert(`✅ ${product.name} 已添加到购物车`)
+    toast.success(`${product.name} 已加入购物车`)
 }
 
 onMounted(async () => {
@@ -164,16 +218,17 @@ onMounted(async () => {
 <style scoped>
 .products-page {
     min-height: 100vh;
-    background: #f8f9fa;
+    background: linear-gradient(180deg, #FFF5F5 0%, #F8F9FA 300px);
     padding-bottom: 80px;
 }
 
 .header-section {
-    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-    padding: 30px 15px 20px;
+    background: linear-gradient(135deg, #FF4757 0%, #FF6B81 100%);
+    padding: 30px 15px 24px;
     position: sticky;
     top: 0;
     z-index: 100;
+    border-radius: 0 0 24px 24px;
 }
 
 .back-btn {
@@ -221,13 +276,35 @@ onMounted(async () => {
     font-size: 14px;
 }
 
+.ai-search-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none; font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; flex-shrink: 0;
+}
+.ai-search-btn:hover { transform: scale(1.1); }
+.ai-search-btn.active { box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3); }
+
+.ai-search-banner {
+    display: flex; align-items: center; gap: 8px;
+    margin: 8px 16px 0; padding: 10px 14px;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08));
+    border-radius: 10px; font-size: 13px; color: #667eea;
+    border: 1px solid rgba(102, 126, 234, 0.15);
+}
+.ai-search-icon { font-size: 16px; }
+.ai-search-text { flex: 1; font-weight: 500; }
+.ai-search-close { cursor: pointer; opacity: 0.6; }
+.ai-search-close:hover { opacity: 1; }
+
 .search-bar {
     display: flex;
     align-items: center;
     background: white;
-    border-radius: 30px;
+    border-radius: 12px;
     padding: 12px 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 16px rgba(255,71,87,0.12);
     max-width: 500px;
     margin: 0 auto;
 }
@@ -243,15 +320,18 @@ onMounted(async () => {
     outline: none;
     font-size: 15px;
     background: transparent;
+    color: #333;
+}
+
+.search-input::placeholder {
+    color: #bbb;
 }
 
 .category-tabs {
     display: flex;
     overflow-x: auto;
-    padding: 15px;
-    background: white;
+    padding: 16px 15px;
     gap: 10px;
-    border-bottom: 1px solid #eee;
     scrollbar-width: none;
 }
 
@@ -259,25 +339,54 @@ onMounted(async () => {
     display: none;
 }
 
+.sort-bar {
+    display: flex;
+    gap: 8px;
+    padding: 12px 20px;
+    background: white;
+    margin: 0 16px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.sort-item {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sort-item.active {
+    background: linear-gradient(135deg, #FF4757, #FF6B81);
+    color: white;
+}
+
+.sort-item:hover:not(.active) {
+    background: #f0f0f0;
+}
+
 .category-tab {
     display: flex;
     align-items: center;
     gap: 6px;
     padding: 10px 16px;
-    background: #f5f5f5;
-    border-radius: 20px;
+    background: white;
+    border-radius: 12px;
     font-size: 14px;
     white-space: nowrap;
     cursor: pointer;
     transition: all 0.3s ease;
     border: 2px solid transparent;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 .category-tab.active {
-    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    background: linear-gradient(135deg, #FF4757, #FF6B81);
     color: white;
     border-color: transparent;
-    box-shadow: 0 4px 15px rgba(255,107,107,0.3);
+    box-shadow: 0 4px 16px rgba(255,71,87,0.3);
 }
 
 .cat-icon {
@@ -291,7 +400,7 @@ onMounted(async () => {
 .cat-count {
     font-size: 12px;
     opacity: 0.8;
-    background: rgba(0,0,0,0.1);
+    background: rgba(0,0,0,0.08);
     padding: 2px 8px;
     border-radius: 10px;
 }
@@ -301,8 +410,8 @@ onMounted(async () => {
 }
 
 .products-container {
-    padding: 20px 15px;
-    max-width: 800px;
+    padding: 16px 15px;
+    max-width: 900px;
     margin: 0 auto;
 }
 
@@ -315,9 +424,9 @@ onMounted(async () => {
     width: 40px;
     height: 40px;
     border: 3px solid #f0f0f0;
-    border-top-color: #ff6b6b;
+    border-top-color: #FF4757;
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: spin 1s linear infinite, shimmer 1.5s ease-in-out infinite;
     margin: 0 auto 15px;
 }
 
@@ -325,103 +434,120 @@ onMounted(async () => {
     to { transform: rotate(360deg); }
 }
 
+@keyframes shimmer {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
 .empty {
     text-align: center;
-    padding: 60px 20px;
+    padding: 80px 20px;
     background: white;
     border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
 }
 
 .empty-icon {
-    font-size: 48px;
-    margin-bottom: 15px;
+    font-size: 72px;
+    margin-bottom: 20px;
+    display: block;
 }
 
 .empty h3 {
     margin: 0 0 8px;
     color: #333;
+    font-size: 18px;
 }
 
 .empty p {
     margin: 0;
-    color: #888;
+    color: #999;
+    font-size: 14px;
 }
 
 .products-grid {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 15px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
 }
 
 .product-card {
-    display: flex;
     background: white;
     border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
     transition: all 0.3s ease;
+    position: relative;
 }
 
 .product-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(255,71,87,0.15);
 }
 
 .product-image-wrapper {
     position: relative;
-    width: 120px;
-    height: 120px;
-    flex-shrink: 0;
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
 }
 
 .product-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image {
+    transform: scale(1.05);
 }
 
 .product-badge {
     position: absolute;
-    top: 8px;
-    left: 8px;
-    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    top: 10px;
+    left: 10px;
+    background: linear-gradient(135deg, #FF4757, #FF6B81);
     color: white;
     font-size: 11px;
     padding: 4px 10px;
-    border-radius: 12px;
+    border-radius: 10px;
     font-weight: 600;
 }
 
 .product-info {
-    flex: 1;
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    padding: 12px 12px 48px 12px;
 }
 
 .product-info h3 {
-    margin: 0 0 6px;
-    font-size: 16px;
+    margin: 0 0 4px;
+    font-size: 14px;
     font-weight: 700;
     color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .product-desc {
-    margin: 0 0 8px;
-    font-size: 13px;
-    color: #888;
+    margin: 0 0 6px;
+    font-size: 12px;
+    color: #aaa;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .product-shop {
-    margin: 0 0 10px;
+    margin: 0 0 6px;
     font-size: 12px;
-    color: #667eea;
+    color: #999;
     cursor: pointer;
-    font-weight: 500;
+    font-weight: 400;
+}
+
+.product-shop:hover {
+    color: #FF4757;
 }
 
 .product-footer {
@@ -431,39 +557,67 @@ onMounted(async () => {
 }
 
 .price {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
-    color: #ff6b6b;
+    color: #FF4757;
 }
 
 .add-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FF4757, #FF6B81);
     color: white;
     border: none;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(255,107,107,0.3);
+    box-shadow: 0 4px 14px rgba(255,71,87,0.35);
+    padding: 0;
 }
 
 .add-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 20px rgba(255,107,107,0.4);
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(255,71,87,0.45);
+}
+
+.add-btn span:last-child {
+    display: none;
 }
 
 .cart-icon {
-    font-size: 14px;
+    font-size: 18px;
 }
 
-@media (min-width: 768px) {
+@media (max-width: 767px) {
+    .products-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .product-info {
+        padding: 10px 10px 44px 10px;
+    }
+
+    .product-image-wrapper {
+        height: 200px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
     .products-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .products-grid {
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 </style>
